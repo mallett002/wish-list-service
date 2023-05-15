@@ -1,8 +1,8 @@
 // import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 
-export const handler = async (event) => {
+export const handler = async (event: Event) => {
     // const client = new DynamoDBClient({ region: "us-east-1" });
-    
+
     // try {
 
     //     const input = {
