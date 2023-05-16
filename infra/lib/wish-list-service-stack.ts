@@ -3,7 +3,7 @@ import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Role } from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-
+import * as path from 'path';
 
 
 export class WishListServiceStack extends cdk.Stack {
@@ -11,7 +11,7 @@ export class WishListServiceStack extends cdk.Stack {
     super(scope, id, props);
 
     // dynamoDb
-    const table = new dynamodb.Table(this, 'Table', {
+    const giftTable = new dynamodb.Table(this, 'Table', {
       partitionKey: { name: 'gift_id', type: dynamodb.AttributeType.STRING },
       sortKey: {name: 'for_user', type: dynamodb.AttributeType.STRING},
       billingMode: dynamodb.BillingMode.PROVISIONED,
@@ -21,11 +21,11 @@ export class WishListServiceStack extends cdk.Stack {
     });
 
     // lambda role to call dynamoDb
-    new lambda.DockerImageFunction(this, 'AssetFunction', {
-      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, 'docker-handler')),
+    const postLambda = new lambda.DockerImageFunction(this, 'AssetFunction', {
+      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', 'functions')),
     });
 
     // lambda
-    // new lambda
+    // giftTable.grantReadWriteData(postLambda);
   }
 }
