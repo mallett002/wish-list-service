@@ -10,8 +10,8 @@ export class WishListServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // dynamoDb
     const giftTable = new dynamodb.Table(this, 'Table', {
+      tableName: 'wish-list-gift',
       partitionKey: { name: 'gift_id', type: dynamodb.AttributeType.STRING },
       sortKey: {name: 'for_user', type: dynamodb.AttributeType.STRING},
       billingMode: dynamodb.BillingMode.PROVISIONED,
@@ -20,12 +20,13 @@ export class WishListServiceStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    // lambda role to call dynamoDb
-    const postLambda = new lambda.DockerImageFunction(this, 'AssetFunction', {
-      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', 'functions')),
+    // dynamodb:PutItem 
+
+    const postLambda = new lambda.DockerImageFunction(this, 'postGiftFunction', {
+      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', 'functions', 'post-gift')),
+      architecture: lambda.Architecture.ARM_64
     });
 
-    // lambda
-    // giftTable.grantReadWriteData(postLambda);
+    giftTable.grantReadWriteData(postLambda);
   }
 }

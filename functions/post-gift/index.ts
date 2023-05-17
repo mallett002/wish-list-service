@@ -7,11 +7,10 @@ export const handler = async (event?: any, context?: any) => {
     const client = new DynamoDBClient({ region: "us-east-1" });
 
     try {
-
         const input = {
             Item: {
                 gift_id: {
-                    S: 'ABE1D7B5-4EEA-4C78-A51B-3B6C1314DBCD'
+                    S: 'ABE1D7B5-4EEA-4C78-A51B-3B6C1314DBCW'
                 },
                 for_user: {
                     S: 'C2D9F0C7-83A5-4303-B319-C918C8473434'
@@ -34,19 +33,15 @@ export const handler = async (event?: any, context?: any) => {
         };
 
         const command = new PutItemCommand(input);
-        const response = await client.send(command);
-        console.log({ response });
+        
+        await client.send(command);
 
-        // TODO implement
-        return { statusCode: 201 };
-
-    } catch (error) {
-
+        return { status: 201, message: 'created' };
+    } catch (error: any) {
         return {
-            statusCode: 201,
-            body: JSON.stringify({
-                message: 'hello world',
-            }),
+            status: error?.$metadata?.httpStatusCode,
+            reason: error.name,
+            error
         };
     }
 };
