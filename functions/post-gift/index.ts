@@ -6,14 +6,17 @@ import { Handler } from 'aws-lambda';
 export const handler = async (event?: any, context?: any) => {
     const client = new DynamoDBClient({ region: "us-east-1" });
 
+    // PK: FAMILY#<familyId>    ex: FAMILY#ABE1D7B5-4EEA-4C78-A51B-3B6C1314DBCW
+    // SK: #MEMBER#<username>#GIFT#<giftId>    ex: #MEMBER#wmallett@gmail.com#GIFT#C2D9F0C7-83A5-4303-B319-C918C8473434
+    
     try {
         const input = {
             Item: {
-                gift_id: {
-                    S: 'ABE1D7B5-4EEA-4C78-A51B-3B6C1314DBCW'
+                PK: {
+                    S: 'FAMILY#ABE1D7B5-4EEA-4C78-A51B-3B6C1314DBCW'
                 },
-                for_user: {
-                    S: 'C2D9F0C7-83A5-4303-B319-C918C8473434'
+                SK: {
+                    S: '#MEMBER#wmallett@gmail.com#GIFT#C2D9F0C7-83A5-4303-B319-C918C8473434'
                 },
                 description: {
                     S: 'see link, something pink.'
