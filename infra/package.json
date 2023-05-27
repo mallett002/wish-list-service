@@ -8,7 +8,9 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "deploy": "cdk deploy prod/WishListDBStack prod/WishListServiceStack",
+    "destroy": "cdk destroy prod/WishListDBStack prod/WishListServiceStack"
   },
   "devDependencies": {
     "@types/jest": "^29.5.1",

@@ -4,40 +4,33 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Role, Effect, PolicyStatement, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as path from 'path';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
 
+interface WishListServiceProps extends cdk.StackProps {
+  wishListTable: dynamodb.Table
+}
 
 export class WishListServiceStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: WishListServiceProps) {
     super(scope, id, props);
 
-    const giftTable = new dynamodb.Table(this, 'Table', {
-      tableName: 'wish-list-gift',
-      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
-      sortKey: {name: 'SK', type: dynamodb.AttributeType.STRING},
-      billingMode: dynamodb.BillingMode.PROVISIONED,
-      readCapacity: 1,
-      writeCapacity: 1,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-    });
-
-    // todo: vpc
     const lambdaRole = new Role(this, 'post-lambda-role', {
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       description: 'Role for interacting with dynamoDB',
     });
 
     lambdaRole.addToPolicy(new PolicyStatement({
-        resources: [giftTable.tableArn],
-        effect: Effect.ALLOW,
-        actions: ['dynamodb:PutItem'],
-      }),
-    );
+      resources: [props.wishListTable.tableArn],
+      effect: Effect.ALLOW,
+      actions: ['dynamodb:PutItem'],
+    }));
 
     const postLambda = new lambda.DockerImageFunction(this, 'postGiftFunction', {
-      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', 'functions', 'post-gift')),
+      code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', '..', 'functions', 'post-gift')),
       architecture: lambda.Architecture.ARM_64,
       role: lambdaRole
     });
 
+    // props.wishListTable.grantWriteData(postLambda);
   }
 }
