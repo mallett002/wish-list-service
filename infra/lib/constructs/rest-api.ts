@@ -12,15 +12,20 @@ export class WishListRestApi extends Construct {
     super(scope, id);
 
     // do lambda proxy integration (so can access request body)
-    const api = new apigateway.RestApi(this, 'books-api', {
-      endpointConfiguration: {types: [apigateway.EndpointType.REGIONAL]}
+    const api = new apigateway.RestApi(this, 'wish-list-api', {
+      endpointConfiguration: {types: [apigateway.EndpointType.REGIONAL]},
+    //   defaultCorsPreflightOptions: {
+    //     allowOrigins: ['*']
+    //   }
     });
 
+    // Access-Control-Allow-Origin: http://my-cool-site.com
     // /gifts
     const gifts = api.root.addResource('gifts');
-    const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda);
+    const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, {proxy: true});
 
     gifts.addMethod('POST', postGiftIntegration);
+    // gifts.addCorsPreflight()
 
     // /gifts/{id}
     const gift = gifts.addResource('{gift_id}');
