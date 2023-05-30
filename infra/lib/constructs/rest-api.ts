@@ -3,7 +3,8 @@ import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 
 interface WishListRestApiProps {
-    postGiftLambda: lambda.Function
+    postGiftLambda: lambda.Function,
+    getGiftLambda: lambda.Function
 }
 
 export class WishListRestApi extends Construct {
@@ -23,11 +24,17 @@ export class WishListRestApi extends Construct {
     // /gifts
     const gifts = api.root.addResource('gifts');
     const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, {proxy: true});
-
     gifts.addMethod('POST', postGiftIntegration);
-    // gifts.addCorsPreflight()
+    gifts.addCorsPreflight({
+        allowOrigins: ['localhost']
+    });
 
     // /gifts/{id}
     const gift = gifts.addResource('{gift_id}');
+    const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, {proxy: true});
+    gift.addMethod('GET', getGiftIntegration);
+    gift.addCorsPreflight({
+        allowOrigins: ['localhost']
+    });
   }
 }

@@ -16,31 +16,21 @@ export class WishListServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WishListServiceProps) {
     super(scope, id, props);
 
-    // const lambdaRole = new Role(this, 'post-lambda-role', {
-    //   assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-    //   description: 'Role for interacting with dynamoDB',
-    // });
+    const postGift = this.createLambdaHandler('post-gift', props.wishListTable, ['dynamodb:PutItem']);
+    const getGift = this.createLambdaHandler('get-gift', props.wishListTable, ['dynamodb:GetItem']);
 
-    // lambdaRole.addToPolicy(new PolicyStatement({
-    //   resources: [props.wishListTable.tableArn],
-    //   effect: Effect.ALLOW,
-    //   actions: ['dynamodb:PutItem'],
-    // }));
-
-    // const postLambda = new lambda.DockerImageFunction(this, 'postGiftFunction', {
-    //   code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', '..', 'functions', 'post-gift')),
-    //   architecture: lambda.Architecture.ARM_64,
-    //   role: lambdaRole
-    // });
-
-    const postGift = new WishListHandler(this, 'PostGiftHandler', {
-      functionName: 'post-gift',
-      wishListTable: props.wishListTable,
-      roleActions: ['dynamodb:PutItem']
-    });
 
     const api = new WishListRestApi(this, 'WishListRestApi', {
-      postGiftLambda: postGift.handler
+      postGiftLambda: postGift.handler,
+      getGiftLambda: getGift.handler
+    });
+  }
+
+  private createLambdaHandler(functionName: string, table: dynamodb.Table, roleActions: string[]): WishListHandler {
+    return new WishListHandler(this, `${functionName}-handler`, {
+      functionName,
+      wishListTable: table,
+      roleActions
     });
   }
 }

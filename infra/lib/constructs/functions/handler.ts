@@ -21,22 +21,22 @@ export class WishListHandler extends Construct {
   constructor(scope: Construct, id: string, props: HandlerProps) {
     super(scope, id);
 
-    // take these things in as props and make this a generic function construct
-    const lambdaRole = new Role(this, `${props.functionName}-lambda-role`, {
-      assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-    });
+    // const lambdaRole = new Role(this, `${props.functionName}-lambda-role`, {
+    //   assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
+    // });
 
-    lambdaRole.addToPolicy(new PolicyStatement({
-      resources: [props.wishListTable.tableArn],
-      effect: Effect.ALLOW,
-      actions: props.roleActions
-    }));
+    // lambdaRole.addToPolicy(new PolicyStatement({
+    //   resources: [props.wishListTable.tableArn],
+    //   effect: Effect.ALLOW,
+    //   actions: props.roleActions
+    // }));
 
     this.handler = new lambda.DockerImageFunction(this, props.functionName, {
       code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', '..', '..', 'functions', props.functionName)),
       architecture: lambda.Architecture.ARM_64,
-      role: lambdaRole
+      // role: lambdaRole
     });
 
+    props.wishListTable.grantFullAccess(this.handler);
   }
 }
