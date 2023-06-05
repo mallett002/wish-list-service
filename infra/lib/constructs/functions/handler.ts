@@ -10,7 +10,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 interface HandlerProps {
   functionName: string;
   wishListTable: dynamodb.Table;
-  roleActions: string[]
+  access: string;
 }
 
 
@@ -21,22 +21,21 @@ export class WishListHandler extends Construct {
   constructor(scope: Construct, id: string, props: HandlerProps) {
     super(scope, id);
 
-    // const lambdaRole = new Role(this, `${props.functionName}-lambda-role`, {
-    //   assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
-    // });
-
-    // lambdaRole.addToPolicy(new PolicyStatement({
-    //   resources: [props.wishListTable.tableArn],
-    //   effect: Effect.ALLOW,
-    //   actions: props.roleActions
-    // }));
-
     this.handler = new lambda.DockerImageFunction(this, props.functionName, {
       code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', '..', '..', 'functions', props.functionName)),
       architecture: lambda.Architecture.ARM_64,
-      // role: lambdaRole
     });
 
-    props.wishListTable.grantFullAccess(this.handler);
+    this.applyDBAccess(props.wishListTable, props.access);
+  }
+
+  private applyDBAccess(table: dynamodb.Table, access: string): void {
+    if (access === 'write') {
+      table.grantWriteData(this.handler);
+    } else if (access === 'readWrite') {
+      table.grantReadWriteData(this.handler);
+    } else {
+      table.grantReadData(this.handler);
+    }
   }
 }

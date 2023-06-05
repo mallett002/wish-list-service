@@ -13,10 +13,9 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
 
     // PK: FAMILY#<familyId>    ex: FAMILY#ABE1D7B5-4EEA-4C78-A51B-3B6C1314DBCW
     // SK: #MEMBER#<username>#GIFT#<giftId>    ex: #MEMBER#wmallett@gmail.com#GIFT#C2D9F0C7-83A5-4303-B319-C918C8473434
-    const { familyId, username, giftId, description, link, name } = JSON.parse(event.body || '{}');
+    const { familyId, username, giftId, description, link, title } = JSON.parse(event.body || '{}');
 
-    if (!familyId || !username || !giftId || !name) {
-        console.log('some are undefined: ', {familyId, username, giftId});
+    if (!familyId || !username || !giftId || !title) {
 
         return {
             statusCode: 400,
@@ -38,13 +37,13 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                     S: `#MEMBER#${username}#GIFT#${giftId}`
                 },
                 description: {
-                    S: description
+                    S: description || ""
                 },
                 link: {
-                    S: link
+                    S: link || ""
                 },
-                name: {
-                    S: name
+                title: {
+                    S: title
                 },
                 purchased: {
                     BOOL: false

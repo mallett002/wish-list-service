@@ -16,8 +16,8 @@ export class WishListServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WishListServiceProps) {
     super(scope, id, props);
 
-    const postGift = this.createLambdaHandler('post-gift', props.wishListTable, ['dynamodb:PutItem']);
-    const getGift = this.createLambdaHandler('get-gift', props.wishListTable, ['dynamodb:GetItem']);
+    const postGift = this.createLambdaHandler('post-gift', props.wishListTable, 'write');
+    const getGift = this.createLambdaHandler('get-gift', props.wishListTable, 'read');
 
 
     const api = new WishListRestApi(this, 'WishListRestApi', {
@@ -26,11 +26,11 @@ export class WishListServiceStack extends cdk.Stack {
     });
   }
 
-  private createLambdaHandler(functionName: string, table: dynamodb.Table, roleActions: string[]): WishListHandler {
+  private createLambdaHandler(functionName: string, table: dynamodb.Table, access: string): WishListHandler {
     return new WishListHandler(this, `${functionName}-handler`, {
       functionName,
       wishListTable: table,
-      roleActions
+      access
     });
   }
 }
