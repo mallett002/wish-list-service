@@ -7,8 +7,8 @@ import * as secretsManager from "aws-cdk-lib/aws-secretsmanager";
 
 
 interface WishListRestApiProps {
-    postGiftLambda: lambda.Function,
-    getGiftLambda: lambda.Function
+    // postGiftLambda: lambda.Function,
+    // getGiftLambda: lambda.Function
 }
 
 export class WishListRestApi extends Construct {
@@ -24,7 +24,9 @@ export class WishListRestApi extends Construct {
         //     //   }
         // });
 
-        const userPool = new cognito.UserPool(this, 'wish-list-cognito-user-pool');
+        const userPool = new cognito.UserPool(this, 'wish-list-cognito-user-pool', {
+            removalPolicy: RemovalPolicy.DESTROY
+        });
 
         const userPoolDomain = userPool.addDomain('wish-list-domain', {
             cognitoDomain: {
@@ -40,24 +42,27 @@ export class WishListRestApi extends Construct {
         // const appSecrets = secretsManager.Secret.fromSecretNameV2(this, 'wish-list-secrets', "wishlist/secrets");
         // const clientId = appSecrets.secretValueFromJson('CLIENT_ID').unsafeUnwrap();
         // const clientSecret = appSecrets.secretValueFromJson('CLIENT_SECRET');
-        const googleClientId = '...';
-        const googleClientSecret = '...';
+        const googleClientId = '947556182196-7arnkmnq4q7rnb0bac1b1k6560iou6nu.apps.googleusercontent.com';
+        const googleClientSecret = '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';
 
 
         const userPoolIdentityProviderGoogle = new cognito.UserPoolIdentityProviderGoogle(this, 'MyUserPoolIdentityProviderGoogle', {
             clientId: googleClientId,
             clientSecret: googleClientSecret,
             userPool: userPool,
-            scopes: ['email'],
-            // scopes: ['openid', 'email'],
+            // scopes: ['email'],
+            scopes: ['openid', 'email', 'profile'],
             attributeMapping: {
-                email: cognito.ProviderAttribute.GOOGLE_EMAIL
+                email: cognito.ProviderAttribute.GOOGLE_EMAIL,
+                familyName: cognito.ProviderAttribute.GOOGLE_FAMILY_NAME,
+                givenName: cognito.ProviderAttribute.GOOGLE_NAME,
+                profilePicture: cognito.ProviderAttribute.GOOGLE_PICTURE
             }
         });
 
         // Todo: Create dummy front end (maybe NextJS app)
         // const callbackUrl = 'https://urlInFrontEndAppOrApiGatewayUrl.com';
-        const callbackUrl = 'http://localhost:3000/';
+        const callbackUrl = 'http://localhost:3000/api/auth/callback/cognito';
 
         const client = new cognito.UserPoolClient(this, "UserPoolClient", {
             userPool,
@@ -127,5 +132,7 @@ export class WishListRestApi extends Construct {
         // });
 
         // const longLivedCredentials = result.data; // Contains {IdToken, AccessToken, RefreshToken...}
+
+        // nextauth: https://next-auth.js.org/providers/cognito
     }
 }
