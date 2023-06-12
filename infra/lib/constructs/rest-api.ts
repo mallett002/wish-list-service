@@ -50,8 +50,7 @@ export class WishListRestApi extends Construct {
             clientId: googleClientId,
             clientSecret: googleClientSecret,
             userPool: userPool,
-            // scopes: ['email'],
-            scopes: ['openid', 'email', 'profile'],
+            scopes: ['openid', 'email', 'profile', 'phone'],
             attributeMapping: {
                 email: cognito.ProviderAttribute.GOOGLE_EMAIL,
                 familyName: cognito.ProviderAttribute.GOOGLE_FAMILY_NAME,
@@ -60,8 +59,6 @@ export class WishListRestApi extends Construct {
             }
         });
 
-        // Todo: Create dummy front end (maybe NextJS app)
-        // const callbackUrl = 'https://urlInFrontEndAppOrApiGatewayUrl.com';
         const callbackUrl = 'http://localhost:3000/api/auth/callback/cognito';
 
         const client = new cognito.UserPoolClient(this, "UserPoolClient", {
@@ -70,6 +67,7 @@ export class WishListRestApi extends Construct {
             supportedIdentityProviders: [cognito.UserPoolClientIdentityProvider.GOOGLE],
             oAuth: {
                 callbackUrls: [callbackUrl],
+                flows: { authorizationCodeGrant: true }
             },
         });
 
