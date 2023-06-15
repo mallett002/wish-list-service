@@ -9,20 +9,19 @@ import { WishListHandler } from '../constructs/functions/handler';
 import { WishListRestApi } from '../constructs/rest-api';
 
 interface WishListServiceProps extends cdk.StackProps {
-  // wishListTable: dynamodb.Table
+  wishListTable: dynamodb.Table
 }
 
 export class WishListServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WishListServiceProps) {
     super(scope, id, props);
 
-    // const postGift = this.createLambdaHandler('post-gift', props.wishListTable, 'write');
-    // const getGift = this.createLambdaHandler('get-gift', props.wishListTable, 'read');
-
+    const postGift = this.createLambdaHandler('post-gift', props.wishListTable, 'write');
+    const getGift = this.createLambdaHandler('get-gift', props.wishListTable, 'read');
 
     const api = new WishListRestApi(this, 'WishListRestApi', {
-      // postGiftLambda: postGift.handler,
-      // getGiftLambda: getGift.handler
+      postGiftLambda: postGift.handler,
+      getGiftLambda: getGift.handler
     });
   }
 

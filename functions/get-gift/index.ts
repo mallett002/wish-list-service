@@ -11,7 +11,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
 
     const {familyId, username, giftId} = event.pathParameters;
 
-    // GET /families/{id}/username/{id}/gifts/{giftId}
+    // GET /families/{id}/users/{id}/gifts/{giftId}
 
     const input: GetItemCommandInput = {
         "Key": {

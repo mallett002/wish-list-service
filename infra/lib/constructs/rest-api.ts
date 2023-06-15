@@ -7,8 +7,8 @@ import * as secretsManager from "aws-cdk-lib/aws-secretsmanager";
 
 
 interface WishListRestApiProps {
-    // postGiftLambda: lambda.Function,
-    // getGiftLambda: lambda.Function
+    postGiftLambda: lambda.Function,
+    getGiftLambda: lambda.Function
 }
 
 export class WishListRestApi extends Construct {
@@ -16,24 +16,36 @@ export class WishListRestApi extends Construct {
     constructor(scope: Construct, id: string, props: WishListRestApiProps) {
         super(scope, id);
 
-        // do lambda proxy integration (so can access request body)
-        // const api = new apigateway.RestApi(this, 'wish-list-api', {
-        //     endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] },
-        //     //   defaultCorsPreflightOptions: {
-        //     //     allowOrigins: ['*']
-        //     //   }
-        // });
+
+        const api = new apigateway.RestApi(this, 'wish-list-api', {
+            endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] },
+            //   defaultCorsPreflightOptions: {
+            //     allowOrigins: ['*']
+            //   }
+            // defaultMethodOptions: {
+            //     authorizationScopes: 
+            // }
+        });
 
         const userPool = new cognito.UserPool(this, 'wish-list-cognito-user-pool', {
             removalPolicy: RemovalPolicy.DESTROY
         });
 
-        const userPoolDomain = userPool.addDomain('wish-list-domain', {
+        const fullAccessScope = new cognito.ResourceServerScope({
+            scopeName: "*",
+            scopeDescription: "Full access"
+        });
+
+        const userServer = userPool.addResourceServer("ResourceServer", {
+            identifier: "WishListResourceServer",
+            scopes: [fullAccessScope]
+        });
+
+        userPool.addDomain('wish-list-domain', {
             cognitoDomain: {
                 domainPrefix: 'wish-list',
             },
         });
-
 
         // Going through this guide: https://aws-cdk.com/cognito-google
         // hosted UI accessible at: https://wish-list.auth.us-east-1.amazoncognito.com/
@@ -66,37 +78,52 @@ export class WishListRestApi extends Construct {
             supportedIdentityProviders: [cognito.UserPoolClientIdentityProvider.GOOGLE],
             oAuth: {
                 callbackUrls: [callbackUrl],
-                flows: { authorizationCodeGrant: true }
+                flows: { authorizationCodeGrant: true },
+                scopes: [
+                     cognito.OAuthScope.resourceServer(userServer, fullAccessScope), 
+                     cognito.OAuthScope.PHONE,
+                     cognito.OAuthScope.EMAIL,
+                     cognito.OAuthScope.OPENID,
+                     cognito.OAuthScope.PROFILE
+                 ],
             },
         });
 
         client.node.addDependency(userPoolIdentityProviderGoogle);
 
-        // const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'wish-list-cognito-authorizer', {
-        //     cognitoUserPools: [userPool],
-        // });
-        
-        // // POST /gifts
-        // const gifts = api.root.addResource('gifts');
-        // const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, { proxy: true });
-        // gifts.addMethod('POST', postGiftIntegration, {
-        //     authorizer,
-        //     authorizationType: apigateway.AuthorizationType.COGNITO,
-        // });
-        // gifts.addCorsPreflight({
-        //     allowOrigins: ['localhost']
-        // });
+        const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'wish-list-cognito-authorizer', {
+            cognitoUserPools: [userPool],
+        });
 
-        // // GET /gifts/{id}
-        // const gift = gifts.addResource('{gift_id}');
-        // const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
-        // gift.addMethod('GET', getGiftIntegration, {
-        //     authorizer,
-        //     authorizationType: apigateway.AuthorizationType.COGNITO,
-        // });
-        // gift.addCorsPreflight({
-        //     allowOrigins: ['localhost']
-        // });
+        const families = api.root.addResource('families');
+        const family = families.addResource('{familyId}');
+        const users = family.addResource('users');
+        const username = users.addResource('{username}');
+        const gifts = username.addResource('gifts');
+        const gift = gifts.addResource('{giftId}');
+
+        // Create gift: POST /families/{id}/users/{username}/gifts/
+        const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, { proxy: true });
+        gifts.addMethod('POST', postGiftIntegration, {
+            authorizer,
+            authorizationType: apigateway.AuthorizationType.COGNITO,
+            authorizationScopes: ["WishListResourceServer/*"]
+        });
+        gifts.addCorsPreflight({
+            allowOrigins: ['localhost']
+        });
+
+
+        // Get gift: GET /families/{id}/users/{username}/gifts/{giftId}
+        const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
+        gift.addMethod('GET', getGiftIntegration, {
+            authorizer,
+            authorizationType: apigateway.AuthorizationType.COGNITO,
+            authorizationScopes: ["WishListResourceServer/*"]
+        });
+        gift.addCorsPreflight({
+            allowOrigins: ['localhost']
+        });
 
 
 
