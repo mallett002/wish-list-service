@@ -29,7 +29,9 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     
     try {
       const payload = await verifier.verify(encryptedToken);
-      console.log({payload});
+      
+      // todo: change username path param to userId
+      // todo: check userId in path === payload.sub. if not, return forbidden.
             
     } catch (err) {
       console.log("Token not valid!", err);
