@@ -15,6 +15,15 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     // SK: #MEMBER#<username>#GIFT#<giftId>    ex: #MEMBER#wmallett@gmail.com#GIFT#C2D9F0C7-83A5-4303-B319-C918C8473434
     const { familyId, username, giftId, description, link, title } = JSON.parse(event.body || '{}');
 
+    // {
+    //     "familyId": "family1",
+    //      "username": "mallett002@gmail.com",
+    //      "giftId": "gift1",
+    //      "description": "hat",
+    //      "link": "google.com",
+    //      "title": "Hat"
+    // }
+
     if (!familyId || !username || !giftId || !title) {
 
         return {

@@ -28,18 +28,20 @@ export class WishListRestApi extends Construct {
         });
 
         const userPool = new cognito.UserPool(this, 'wish-list-cognito-user-pool', {
-            removalPolicy: RemovalPolicy.DESTROY
+            removalPolicy: RemovalPolicy.DESTROY,
+            selfSignUpEnabled: true,
+            autoVerify: {email: true}
         });
 
-        const fullAccessScope = new cognito.ResourceServerScope({
-            scopeName: "*",
-            scopeDescription: "Full access"
-        });
+        // const fullAccessScope = new cognito.ResourceServerScope({
+        //     scopeName: "*",
+        //     scopeDescription: "Full access"
+        // });
 
-        const userServer = userPool.addResourceServer("ResourceServer", {
-            identifier: "WishListResourceServer",
-            scopes: [fullAccessScope]
-        });
+        // const userServer = userPool.addResourceServer("ResourceServer", {
+        //     identifier: "WishListResourceServer",
+        //     scopes: [fullAccessScope]
+        // });
 
         userPool.addDomain('wish-list-domain', {
             cognitoDomain: {
@@ -54,14 +56,14 @@ export class WishListRestApi extends Construct {
         // const appSecrets = secretsManager.Secret.fromSecretNameV2(this, 'wish-list-secrets', "wishlist/secrets");
         // const clientId = appSecrets.secretValueFromJson('CLIENT_ID').unsafeUnwrap();
         // const clientSecret = appSecrets.secretValueFromJson('CLIENT_SECRET');
-        const googleClientId = '...';
-        const googleClientSecret = '...';
+        const googleClientId = '947556182196-7arnkmnq4q7rnb0bac1b1k6560iou6nu.apps.googleusercontent.com';
+        const googleClientSecret = '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';
 
         const userPoolIdentityProviderGoogle = new cognito.UserPoolIdentityProviderGoogle(this, 'MyUserPoolIdentityProviderGoogle', {
             clientId: googleClientId,
             clientSecret: googleClientSecret,
             userPool: userPool,
-            scopes: ['openid', 'email', 'profile', 'phone'],
+            scopes: ['profile', 'email', 'openid'],
             attributeMapping: {
                 email: cognito.ProviderAttribute.GOOGLE_EMAIL,
                 familyName: cognito.ProviderAttribute.GOOGLE_FAMILY_NAME,
@@ -80,10 +82,10 @@ export class WishListRestApi extends Construct {
                 callbackUrls: [callbackUrl],
                 flows: { authorizationCodeGrant: true },
                 scopes: [
-                     cognito.OAuthScope.resourceServer(userServer, fullAccessScope), 
+                    //  cognito.OAuthScope.resourceServer(userServer, fullAccessScope), 
+                     cognito.OAuthScope.OPENID,
                      cognito.OAuthScope.PHONE,
                      cognito.OAuthScope.EMAIL,
-                     cognito.OAuthScope.OPENID,
                      cognito.OAuthScope.PROFILE
                  ],
             },
@@ -107,7 +109,7 @@ export class WishListRestApi extends Construct {
         gifts.addMethod('POST', postGiftIntegration, {
             authorizer,
             authorizationType: apigateway.AuthorizationType.COGNITO,
-            authorizationScopes: ["WishListResourceServer/*"]
+            // authorizationScopes: ["WishListResourceServer/*"]
         });
         gifts.addCorsPreflight({
             allowOrigins: ['localhost']
@@ -119,7 +121,7 @@ export class WishListRestApi extends Construct {
         gift.addMethod('GET', getGiftIntegration, {
             authorizer,
             authorizationType: apigateway.AuthorizationType.COGNITO,
-            authorizationScopes: ["WishListResourceServer/*"]
+            // authorizationScopes: ["WishListResourceServer/*"]
         });
         gift.addCorsPreflight({
             allowOrigins: ['localhost']
