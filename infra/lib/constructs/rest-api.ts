@@ -93,9 +93,9 @@ export class WishListRestApi extends Construct {
 
         client.node.addDependency(userPoolIdentityProviderGoogle);
 
-        const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'wish-list-cognito-authorizer', {
-            cognitoUserPools: [userPool],
-        });
+        // const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'wish-list-cognito-authorizer', {
+        //     cognitoUserPools: [userPool],
+        // });
 
         const families = api.root.addResource('families');
         const family = families.addResource('{familyId}');
@@ -107,8 +107,8 @@ export class WishListRestApi extends Construct {
         // Create gift: POST /families/{id}/users/{username}/gifts/
         const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, { proxy: true });
         gifts.addMethod('POST', postGiftIntegration, {
-            authorizer,
-            authorizationType: apigateway.AuthorizationType.COGNITO,
+            // authorizer,
+            // authorizationType: apigateway.AuthorizationType.COGNITO,
             // authorizationScopes: ["WishListResourceServer/*"]
         });
         gifts.addCorsPreflight({
@@ -119,8 +119,8 @@ export class WishListRestApi extends Construct {
         // Get gift: GET /families/{id}/users/{username}/gifts/{giftId}
         const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
         gift.addMethod('GET', getGiftIntegration, {
-            authorizer,
-            authorizationType: apigateway.AuthorizationType.COGNITO,
+            // authorizer,
+            // authorizationType: apigateway.AuthorizationType.COGNITO,
             // authorizationScopes: ["WishListResourceServer/*"]
         });
         gift.addCorsPreflight({
