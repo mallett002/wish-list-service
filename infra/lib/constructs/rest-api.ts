@@ -56,8 +56,8 @@ export class WishListRestApi extends Construct {
         // const appSecrets = secretsManager.Secret.fromSecretNameV2(this, 'wish-list-secrets', "wishlist/secrets");
         // const clientId = appSecrets.secretValueFromJson('CLIENT_ID').unsafeUnwrap();
         // const clientSecret = appSecrets.secretValueFromJson('CLIENT_SECRET');
-        const googleClientId = '947556182196-7arnkmnq4q7rnb0bac1b1k6560iou6nu.apps.googleusercontent.com';
-        const googleClientSecret = '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';
+        const googleClientId = '...';
+        const googleClientSecret = '...';
 
         const userPoolIdentityProviderGoogle = new cognito.UserPoolIdentityProviderGoogle(this, 'MyUserPoolIdentityProviderGoogle', {
             clientId: googleClientId,
