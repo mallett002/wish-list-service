@@ -12,7 +12,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     console.log(JSON.stringify(context, null, 2));
 
     // PK: FAMILY#<familyId>    ex: FAMILY#ABE1D7B5-4EEA-4C78-A51B-3B6C1314DBCW
-    // SK: #MEMBER#<sub>#GIFT#<giftId>    ex: #MEMBER#24c8f498-3011-7012-8f4d-329c3f10f130#GIFT#C2D9F0C7-83A5-4303-B319-C918C8473434
+    // SK: #MEMBER#<username>#GIFT#<giftId>    ex: #MEMBER#mallett002@gmail.com#GIFT#C2D9F0C7-83A5-4303-B319-C918C8473434
     const { familyId, username, giftId, description, link, title } = JSON.parse(event.body || '{}');
 
 // {

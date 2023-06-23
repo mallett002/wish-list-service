@@ -1,3 +1,4 @@
+import * as cdk from 'aws-cdk-lib';
 import { Construct } from "constructs";
 import { RemovalPolicy } from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
@@ -12,6 +13,8 @@ interface WishListRestApiProps {
 }
 
 export class WishListRestApi extends Construct {
+    public readonly appClientId: string;
+    public readonly userPoolId: string;
 
     constructor(scope: Construct, id: string, props: WishListRestApiProps) {
         super(scope, id);
@@ -27,12 +30,6 @@ export class WishListRestApi extends Construct {
             // }
         });
 
-        const userPool = new cognito.UserPool(this, 'wish-list-cognito-user-pool', {
-            removalPolicy: RemovalPolicy.DESTROY,
-            selfSignUpEnabled: true,
-            autoVerify: {email: true}
-        });
-
         // const fullAccessScope = new cognito.ResourceServerScope({
         //     scopeName: "*",
         //     scopeDescription: "Full access"
@@ -43,12 +40,6 @@ export class WishListRestApi extends Construct {
         //     scopes: [fullAccessScope]
         // });
 
-        userPool.addDomain('wish-list-domain', {
-            cognitoDomain: {
-                domainPrefix: 'wish-list',
-            },
-        });
-
         // Going through this guide: https://aws-cdk.com/cognito-google
         // hosted UI accessible at: https://wish-list.auth.us-east-1.amazoncognito.com/
         // redirect URI for Google: https://wish-list.auth.us-east-1.amazoncognito.com/oauth2/idpresponse
@@ -56,42 +47,8 @@ export class WishListRestApi extends Construct {
         // const appSecrets = secretsManager.Secret.fromSecretNameV2(this, 'wish-list-secrets', "wishlist/secrets");
         // const clientId = appSecrets.secretValueFromJson('CLIENT_ID').unsafeUnwrap();
         // const clientSecret = appSecrets.secretValueFromJson('CLIENT_SECRET');
-        const googleClientId = '...';
-        const googleClientSecret = '...';
 
-        const userPoolIdentityProviderGoogle = new cognito.UserPoolIdentityProviderGoogle(this, 'MyUserPoolIdentityProviderGoogle', {
-            clientId: googleClientId,
-            clientSecret: googleClientSecret,
-            userPool: userPool,
-            scopes: ['profile', 'email', 'openid'],
-            attributeMapping: {
-                email: cognito.ProviderAttribute.GOOGLE_EMAIL,
-                familyName: cognito.ProviderAttribute.GOOGLE_FAMILY_NAME,
-                givenName: cognito.ProviderAttribute.GOOGLE_NAME,
-                profilePicture: cognito.ProviderAttribute.GOOGLE_PICTURE
-            }
-        });
 
-        const callbackUrl = 'http://localhost:3000/api/auth/callback/cognito';
-
-        const client = new cognito.UserPoolClient(this, "UserPoolClient", {
-            userPool,
-            generateSecret: true,
-            supportedIdentityProviders: [cognito.UserPoolClientIdentityProvider.GOOGLE],
-            oAuth: {
-                callbackUrls: [callbackUrl],
-                flows: { authorizationCodeGrant: true },
-                scopes: [
-                    //  cognito.OAuthScope.resourceServer(userServer, fullAccessScope), 
-                     cognito.OAuthScope.OPENID,
-                     cognito.OAuthScope.PHONE,
-                     cognito.OAuthScope.EMAIL,
-                     cognito.OAuthScope.PROFILE
-                 ],
-            },
-        });
-
-        client.node.addDependency(userPoolIdentityProviderGoogle);
 
         // const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'wish-list-cognito-authorizer', {
         //     cognitoUserPools: [userPool],
@@ -100,11 +57,11 @@ export class WishListRestApi extends Construct {
         const families = api.root.addResource('families');
         const family = families.addResource('{familyId}');
         const users = family.addResource('users');
-        const userId = users.addResource('{userId}');
-        const gifts = userId.addResource('gifts');
+        const username = users.addResource('{username}');
+        const gifts = username.addResource('gifts');
         const gift = gifts.addResource('{giftId}');
 
-        // Create gift: POST /families/{id}/users/{userId}/gifts/
+        // Create gift: POST /families/{id}/users/{username}/gifts/
         const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, { proxy: true });
         gifts.addMethod('POST', postGiftIntegration, {
             // authorizer,
@@ -116,7 +73,7 @@ export class WishListRestApi extends Construct {
         });
 
 
-        // Get gift: GET /families/{id}/users/{userId}/gifts/{giftId}
+        // Get gift: GET /families/{id}/users/{username}/gifts/{giftId}
         const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
         gift.addMethod('GET', getGiftIntegration, {
             // authorizer,

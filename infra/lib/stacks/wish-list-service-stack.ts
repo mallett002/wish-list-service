@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { WishListHandler } from '../constructs/functions/handler';
 import { WishListRestApi } from '../constructs/rest-api';
+import { Auth } from './auth';
 
 interface WishListServiceProps extends cdk.StackProps {
   wishListTable: dynamodb.Table
@@ -16,20 +17,32 @@ export class WishListServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WishListServiceProps) {
     super(scope, id, props);
 
-    const postGift = this.createLambdaHandler('post-gift', props.wishListTable, 'write');
-    const getGift = this.createLambdaHandler('get-gift', props.wishListTable, 'read');
+    // Todo: create lambda authorizer
+        // good example: http://buraktas.com/api-gateway-custom-lambda-authorizer-aws-cdk/
 
-    const api = new WishListRestApi(this, 'WishListRestApi', {
+    const auth = new Auth(this, 'WishListAuth');
+
+    const postGift = this.createLambdaHandler( 'post-gift', props.wishListTable, 'write', {userPoolId: auth.userPoolId, appClientId: auth.appClientId});
+    const getGift = this.createLambdaHandler('get-gift', props.wishListTable, 'read', {userPoolId: auth.userPoolId, appClientId: auth.appClientId});
+
+    new WishListRestApi(this, 'WishListRestApi', {
       postGiftLambda: postGift.handler,
       getGiftLambda: getGift.handler
     });
   }
 
-  private createLambdaHandler(functionName: string, table: dynamodb.Table, access: string): WishListHandler {
+  private createLambdaHandler(
+    functionName: string,
+    table: dynamodb.Table,
+    access: string,
+    authCreds: {appClientId: string; userPoolId: string;}
+  ): WishListHandler {
     return new WishListHandler(this, `${functionName}-handler`, {
       functionName,
       wishListTable: table,
-      access
+      access,
+      appClientId: authCreds.appClientId,
+      userPoolId: authCreds.userPoolId
     });
   }
 }

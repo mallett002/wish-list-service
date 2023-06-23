@@ -11,6 +11,8 @@ interface HandlerProps {
   functionName: string;
   wishListTable: dynamodb.Table;
   access: string;
+  appClientId: string;
+  userPoolId: string;
 }
 
 
@@ -24,6 +26,10 @@ export class WishListHandler extends Construct {
     this.handler = new lambda.DockerImageFunction(this, props.functionName, {
       code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', '..', '..', 'functions', props.functionName)),
       architecture: lambda.Architecture.ARM_64,
+      environment: {
+        APP_CLIENT_ID: props.appClientId,
+        USER_POOL_ID: props.userPoolId
+      }
     });
 
     this.applyDBAccess(props.wishListTable, props.access);

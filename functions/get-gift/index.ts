@@ -8,7 +8,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
   const client = new DynamoDBClient({ region: "us-east-1" });
 
   const { Authorization } = event.headers;
-  const { familyId, userId, giftId } = event.pathParameters;
+  const { familyId, username, giftId } = event.pathParameters;
 
   if (!Authorization) {
     return {
@@ -21,29 +21,16 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     }
   }
 
-  // Todo: use env vars for these
   const verifier = CognitoJwtVerifier.create({
-    userPoolId: "us-east-1_VHq3eUcoC",
+    userPoolId: process.env.USER_POOL_ID || '',
     tokenUse: "access",
-    clientId: "33a9l29lpt18inurahn35tqv8s",
+    clientId: process.env.APP_CLIENT_ID || '',
   });
 
   const [, encryptedToken] = Authorization.split(' ');
 
   try {
-    const payload = await verifier.verify(encryptedToken);
-
-    if (payload.sub !== userId) {
-      return {
-        statusCode: 403,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Credentials": true
-        },
-        body: JSON.stringify({ message: 'Forbidden' })
-      }
-    }
-
+    await verifier.verify(encryptedToken);
   } catch (err) {
     console.log("Token not valid!", err);
 
@@ -57,15 +44,14 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     };
   }
 
-  // GET /families/{id}/users/{id}/gifts/{giftId}
+  // GET /families/{id}/users/{username}/gifts/{giftId}
   const input: GetItemCommandInput = {
     "Key": {
       "PK": {
         "S": `FAMILY#${familyId}`
       },
       "SK": {
-        "S": `#MEMBER#mallett002@gmail.com#GIFT#${giftId}`
-        // "S": `#MEMBER#${userId}#GIFT#${giftId}`
+        "S": `#MEMBER#${username}#GIFT#${giftId}`
       }
     },
     "TableName": "wish-list-table"
