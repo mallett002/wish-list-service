@@ -1,7 +1,6 @@
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 
-import { Context, APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
-import { Handler } from 'aws-lambda';
+import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 
 export const handler = async (event: APIGatewayProxyEvent, context?: any): Promise<APIGatewayProxyResult> => {
     const client = new DynamoDBClient({ region: "us-east-1" });

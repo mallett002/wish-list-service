@@ -1,7 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from "constructs";
 import { RemovalPolicy } from 'aws-cdk-lib';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as cognito from "aws-cdk-lib/aws-cognito";
 
 export class Auth extends Construct {
@@ -25,8 +24,8 @@ export class Auth extends Construct {
             },
         });
 
-        const googleClientId = '947556182196-7arnkmnq4q7rnb0bac1b1k6560iou6nu.apps.googleusercontent.com';
-        const googleClientSecret = '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';
+        const googleClientId = '...';
+        const googleClientSecret = '...';
 
         const userPoolIdentityProviderGoogle = new cognito.UserPoolIdentityProviderGoogle(this, 'MyUserPoolIdentityProviderGoogle', {
             clientId: googleClientId,

@@ -1,11 +1,8 @@
 import * as path from 'path';
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from "constructs";
-import { RemovalPolicy } from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as cognito from "aws-cdk-lib/aws-cognito";
-import * as secretsManager from "aws-cdk-lib/aws-secretsmanager";
 
 
 interface WishListRestApiProps {
@@ -32,15 +29,6 @@ export class WishListRestApi extends Construct {
             // }
         });
 
-        // const fullAccessScope = new cognito.ResourceServerScope({
-        //     scopeName: "*",
-        //     scopeDescription: "Full access"
-        // });
-
-        // const userServer = userPool.addResourceServer("ResourceServer", {
-        //     identifier: "WishListResourceServer",
-        //     scopes: [fullAccessScope]
-        // });
 
         // Going through this guide: https://aws-cdk.com/cognito-google
         // hosted UI accessible at: https://wish-list.auth.us-east-1.amazoncognito.com/
@@ -49,12 +37,6 @@ export class WishListRestApi extends Construct {
         // const appSecrets = secretsManager.Secret.fromSecretNameV2(this, 'wish-list-secrets', "wishlist/secrets");
         // const clientId = appSecrets.secretValueFromJson('CLIENT_ID').unsafeUnwrap();
         // const clientSecret = appSecrets.secretValueFromJson('CLIENT_SECRET');
-
-
-
-        // const authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'wish-list-cognito-authorizer', {
-        //     cognitoUserPools: [userPool],
-        // });
 
         const authLambda = new lambda.DockerImageFunction(this, 'authorizer-lambda', {
             code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', '..', 'functions', 'authorizer')),
@@ -81,10 +63,9 @@ export class WishListRestApi extends Construct {
         // Create gift: POST /families/{id}/users/{username}/gifts/
         const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, { proxy: true });
         gifts.addMethod('POST', postGiftIntegration, {
-            // authorizer,
-            // authorizationType: apigateway.AuthorizationType.COGNITO,
-            // authorizationScopes: ["WishListResourceServer/*"]
-        });
+            // authorizer: authorizer,
+            // authorizationType: apigateway.AuthorizationType.CUSTOM,
+         });
         gifts.addCorsPreflight({
             allowOrigins: ['localhost']
         });
@@ -92,9 +73,6 @@ export class WishListRestApi extends Construct {
         // Get gift: GET /families/{id}/users/{username}/gifts/{giftId}
         const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
         gift.addMethod('GET', getGiftIntegration, {
-            // authorizer,
-            // authorizationType: apigateway.AuthorizationType.COGNITO,
-            // authorizationScopes: ["WishListResourceServer/*"]
             authorizer: authorizer,
             authorizationType: apigateway.AuthorizationType.CUSTOM,
         });
