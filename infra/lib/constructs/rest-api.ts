@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from "constructs";
 import { RemovalPolicy } from 'aws-cdk-lib';
@@ -9,7 +10,9 @@ import * as secretsManager from "aws-cdk-lib/aws-secretsmanager";
 
 interface WishListRestApiProps {
     postGiftLambda: lambda.Function,
-    getGiftLambda: lambda.Function
+    getGiftLambda: lambda.Function,
+    appClientId: string,
+    userPoolId: string,
 }
 
 export class WishListRestApi extends Construct {
@@ -18,7 +21,6 @@ export class WishListRestApi extends Construct {
 
     constructor(scope: Construct, id: string, props: WishListRestApiProps) {
         super(scope, id);
-
 
         const api = new apigateway.RestApi(this, 'wish-list-api', {
             endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] },
@@ -54,6 +56,21 @@ export class WishListRestApi extends Construct {
         //     cognitoUserPools: [userPool],
         // });
 
+        const authLambda = new lambda.DockerImageFunction(this, 'authorizer-lambda', {
+            code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', '..', 'functions', 'authorizer')),
+            architecture: lambda.Architecture.ARM_64,
+            environment: {
+                APP_CLIENT_ID: props.appClientId,
+                USER_POOL_ID: props.userPoolId
+            }
+        });
+
+        const authorizer = new apigateway.RequestAuthorizer(this, 'wish-list-request-authorizer', {
+            handler: authLambda,
+            identitySources: [apigateway.IdentitySource.header('Authorization')],
+            resultsCacheTtl: cdk.Duration.seconds(0),
+        });
+
         const families = api.root.addResource('families');
         const family = families.addResource('{familyId}');
         const users = family.addResource('users');
@@ -72,13 +89,14 @@ export class WishListRestApi extends Construct {
             allowOrigins: ['localhost']
         });
 
-
         // Get gift: GET /families/{id}/users/{username}/gifts/{giftId}
         const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
         gift.addMethod('GET', getGiftIntegration, {
             // authorizer,
             // authorizationType: apigateway.AuthorizationType.COGNITO,
             // authorizationScopes: ["WishListResourceServer/*"]
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
         });
         gift.addCorsPreflight({
             allowOrigins: ['localhost']

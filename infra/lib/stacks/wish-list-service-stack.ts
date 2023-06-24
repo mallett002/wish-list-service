@@ -17,9 +17,6 @@ export class WishListServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WishListServiceProps) {
     super(scope, id, props);
 
-    // Todo: create lambda authorizer
-        // good example: http://buraktas.com/api-gateway-custom-lambda-authorizer-aws-cdk/
-
     const auth = new Auth(this, 'WishListAuth');
 
     const postGift = this.createLambdaHandler( 'post-gift', props.wishListTable, 'write', {userPoolId: auth.userPoolId, appClientId: auth.appClientId});
@@ -27,7 +24,9 @@ export class WishListServiceStack extends cdk.Stack {
 
     new WishListRestApi(this, 'WishListRestApi', {
       postGiftLambda: postGift.handler,
-      getGiftLambda: getGift.handler
+      getGiftLambda: getGift.handler,
+      appClientId: auth.appClientId,
+      userPoolId: auth.userPoolId
     });
   }
 
