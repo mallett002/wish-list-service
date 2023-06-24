@@ -15,7 +15,7 @@ export class ProdStage extends cdk.Stage {
         });
 
         // App Stack
-        const appStack = new WishListServiceStack(this, 'WishListServiceStack', {
+        new WishListServiceStack(this, 'WishListServiceStack', {
             env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEFAULT_REGION },
             wishListTable: dbStack.wishListTable
         });

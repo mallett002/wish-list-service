@@ -1,7 +1,6 @@
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
 
-import { Context, APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
-import { Handler } from 'aws-lambda';
+import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 
 export const handler = async (event: APIGatewayProxyEvent, context?: any): Promise<APIGatewayProxyResult> => {
     const client = new DynamoDBClient({ region: "us-east-1" });
@@ -12,8 +11,17 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     console.log(JSON.stringify(context, null, 2));
 
     // PK: FAMILY#<familyId>    ex: FAMILY#ABE1D7B5-4EEA-4C78-A51B-3B6C1314DBCW
-    // SK: #MEMBER#<username>#GIFT#<giftId>    ex: #MEMBER#wmallett@gmail.com#GIFT#C2D9F0C7-83A5-4303-B319-C918C8473434
+    // SK: #MEMBER#<username>#GIFT#<giftId>    ex: #MEMBER#mallett002@gmail.com#GIFT#C2D9F0C7-83A5-4303-B319-C918C8473434
     const { familyId, username, giftId, description, link, title } = JSON.parse(event.body || '{}');
+
+// {
+//     "familyId": "family1",
+//     "username": "mallett002@gmail.com",
+//     "giftId": "gift1",
+//     "description": "hat",
+//     "link": "google.com",
+//     "title": "Hat"
+// }
 
     if (!familyId || !username || !giftId || !title) {
 
