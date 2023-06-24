@@ -24,8 +24,8 @@ export class Auth extends Construct {
             },
         });
 
-        const googleClientId = '...';
-        const googleClientSecret = '...';
+        const googleClientId = process.env.GOOGLE_CLIENT_ID || '';
+        const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET || '';
 
         const userPoolIdentityProviderGoogle = new cognito.UserPoolIdentityProviderGoogle(this, 'MyUserPoolIdentityProviderGoogle', {
             clientId: googleClientId,
