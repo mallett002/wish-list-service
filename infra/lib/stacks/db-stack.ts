@@ -19,5 +19,13 @@ export class WishListDBStack extends cdk.Stack {
             removalPolicy: cdk.RemovalPolicy.DESTROY
         });
 
+        this.wishListTable.addGlobalSecondaryIndex({
+            indexName: 'inverse-composite',
+            readCapacity: 1,
+            writeCapacity: 1,
+            partitionKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
+            sortKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
+        });
+
     }
 }
