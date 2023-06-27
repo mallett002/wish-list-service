@@ -17,6 +17,9 @@ export const handler = async (event: PostConfirmationTriggerEvent): Promise<Post
         },
         userId: {
           S: sub || ""
+        },
+        alias: {
+          S: ''
         }
       },
       ReturnConsumedCapacity: 'TOTAL',
