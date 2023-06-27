@@ -1,19 +1,36 @@
+import * as path from 'path';
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from "constructs";
 import { RemovalPolicy } from 'aws-cdk-lib';
 import * as cognito from "aws-cdk-lib/aws-cognito";
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+
+interface AuthProps {
+    table: dynamodb.Table
+}
 
 export class Auth extends Construct {
     public readonly appClientId: string;
     public readonly userPoolId: string;
+    public readonly postConfirmationLambda: lambda.Function;
 
-    constructor(scope: Construct, id: string) {
+    constructor(scope: Construct, id: string, props: AuthProps) {
         super(scope, id);
+
+        this.postConfirmationLambda = new lambda.DockerImageFunction(this, 'post-confirmation-lambda', {
+            code: lambda.DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', '..', 'functions', 'post-confirmation')),
+            architecture: lambda.Architecture.ARM_64,
+        });
+
+        // TODO: changed this from grantReadWrite. Make sure this works
+        props.table.grantWriteData(this.postConfirmationLambda);
 
         const userPool = new cognito.UserPool(this, 'wish-list-cognito-user-pool', {
             removalPolicy: RemovalPolicy.DESTROY,
             selfSignUpEnabled: true,
             autoVerify: {email: true},
+            lambdaTriggers: {postConfirmation: this.postConfirmationLambda}
         });
         
         this.userPoolId = userPool.userPoolId;

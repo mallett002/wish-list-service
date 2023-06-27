@@ -13,7 +13,7 @@ export class WishListServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WishListServiceProps) {
     super(scope, id, props);
 
-    const auth = new Auth(this, 'WishListAuth');
+    const auth = new Auth(this, 'WishListAuth', {table: props.wishListTable});
 
     const postGift = this.createLambdaHandler( 'post-gift', props.wishListTable, 'write');
     const getGift = this.createLambdaHandler('get-gift', props.wishListTable, 'read');
