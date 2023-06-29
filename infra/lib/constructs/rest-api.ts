@@ -8,6 +8,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 interface WishListRestApiProps {
     postGiftLambda: lambda.Function,
     getGiftLambda: lambda.Function,
+    createFamilyLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -25,7 +26,8 @@ export class WishListRestApi extends Construct {
             //     allowOrigins: ['*']
             //   }
             // defaultMethodOptions: {
-            //     authorizationScopes: 
+            //     authorizationType: 'CUSTOM',
+            //     authorizer: 
             // }
         });
 
@@ -60,15 +62,25 @@ export class WishListRestApi extends Construct {
         const gifts = username.addResource('gifts');
         const gift = gifts.addResource('{giftId}');
 
+        // Create family: POST /families
+        const createFamilyIntegration = new apigateway.LambdaIntegration(props.createFamilyLambda, { proxy: true, });
+        families.addMethod('POST', createFamilyIntegration, {
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+        });
+        authLambda.grantInvoke(props.createFamilyLambda); // todo: remove this and see if still works
+        // shouldn't this be props.createFamilyLambda.grantInvoke(authLambda)?
+
         // Create gift: POST /families/{id}/users/{username}/gifts/
         const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, { proxy: true });
         gifts.addMethod('POST', postGiftIntegration, {
-            // authorizer: authorizer,
-            // authorizationType: apigateway.AuthorizationType.CUSTOM,
-         });
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+        });
         gifts.addCorsPreflight({
             allowOrigins: ['localhost']
         });
+        authLambda.grantInvoke(props.postGiftLambda); // Think adding this got it working. Is my policyDocument wrong in the authorizer?
 
         // Get gift: GET /families/{id}/users/{username}/gifts/{giftId}
         const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
@@ -79,6 +91,7 @@ export class WishListRestApi extends Construct {
         gift.addCorsPreflight({
             allowOrigins: ['localhost']
         });
+        authLambda.grantInvoke(props.getGiftLambda);
 
 
 

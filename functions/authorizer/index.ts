@@ -3,7 +3,7 @@ import { APIGatewayAuthorizerResult, PolicyDocument } from 'aws-lambda';
 
 
 export const handler = async (event: any): Promise<APIGatewayAuthorizerResult> => {
-  console.log(JSON.stringify({headers: event.headers}));
+  console.log(JSON.stringify({event: event}));
   
   const { authorization } = event.headers;
 
