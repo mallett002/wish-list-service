@@ -35,7 +35,7 @@ export const handler = async (event: any): Promise<APIGatewayAuthorizerResult> =
     };
 
     const context = {
-      'userId': decodedJWT.sub,
+      memberId: decodedJWT.sub,
     };
 
     const response: APIGatewayAuthorizerResult = {

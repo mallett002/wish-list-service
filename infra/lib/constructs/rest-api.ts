@@ -47,8 +47,8 @@ export class WishListRestApi extends Construct {
         const families = api.root.addResource('families');
         const family = families.addResource('{familyId}');
         const users = family.addResource('users');
-        const username = users.addResource('{username}');
-        const gifts = username.addResource('gifts');
+        const memberId = users.addResource('{memberId}');
+        const gifts = memberId.addResource('gifts');
         const gift = gifts.addResource('{giftId}');
 
         // Create family: POST /families
@@ -59,7 +59,7 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.createFamilyLambda);
 
-        // Create gift: POST /families/{id}/users/{username}/gifts/
+        // Create gift: POST /families/{id}/users/{memberId}/gifts/
         const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, { proxy: true });
         gifts.addMethod('POST', postGiftIntegration, {
             authorizer: authorizer,
@@ -70,7 +70,7 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.postGiftLambda);
 
-        // Get gift: GET /families/{id}/users/{username}/gifts/{giftId}
+        // Get gift: GET /families/{id}/users/{memberId}/gifts/{giftId}
         const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
         gift.addMethod('GET', getGiftIntegration, {
             authorizer: authorizer,

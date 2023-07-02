@@ -2,21 +2,20 @@ import { DynamoDBClient, GetItemCommand, GetItemCommandInput } from '@aws-sdk/cl
 import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 
 
+//TODO: This handler will probably go away
 export const handler = async (event: any, context?: any): Promise<APIGatewayProxyResult> => {
   const client = new DynamoDBClient({ region: "us-east-1" });
 
+  const { familyId, memberId, giftId } = event.pathParameters;
 
-  // userId (sub) will be on the context from the authorizer lambda
-  const { familyId, username, giftId } = event.pathParameters;
-
-  // GET /families/{id}/users/{username}/gifts/{giftId}
+  // GET /families/{id}/users/{memberId}/gifts/{giftId}
   const input: GetItemCommandInput = {
     "Key": {
       "PK": {
         "S": `FAMILY#${familyId}`
       },
       "SK": {
-        "S": `#MEMBER#${username}#GIFT#${giftId}`
+        "S": `MEMBER#${memberId}GIFT#${giftId}`
       }
     },
     "TableName": "wish-list-table"

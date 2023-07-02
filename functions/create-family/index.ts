@@ -11,12 +11,12 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     const { familyName, familyImage } = JSON.parse(event.body || '{}');
 
     // Get member from auth context
-    const { userId } = event.requestContext.authorizer;
+    const { memberId } = event.requestContext.authorizer;
 
     const getMemberInput: GetItemCommandInput = {
         "Key": {
             "PK": {
-                "S": `MEMBER#${userId}`
+                "S": `MEMBER#${memberId}`
             },
             "SK": {
                 "S": 'PROFILE'
@@ -44,7 +44,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                                     "S": `FAMILY#${familyId}`
                                 },
                                 "SK": {
-                                    "S": 'PROFILE'
+                                    "S": 'MEMBER#BOARD'
                                 },
                                 "familyName": {
                                     "S": familyName
@@ -62,7 +62,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                                     "S": `FAMILY#${familyId}`
                                 },
                                 "SK": {
-                                    "S": `MEMBER#${email}`
+                                    "S": `MEMBER#${memberId}`
                                 },
                                 "alias": {
                                     "S": alias
