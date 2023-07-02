@@ -5,6 +5,7 @@ import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 export const handler = async (event: any, context?: any): Promise<APIGatewayProxyResult> => {
   const client = new DynamoDBClient({ region: "us-east-1" });
 
+  // GET /families/{id}/board
   /*
   
   should return something like:
@@ -32,16 +33,16 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
     }
   }
 
+  QueryCommand: https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/dynamodb/command/QueryCommand/
+  Maybe I should save family profile as PK=FAMILY#familyId AND SK = MEMBER#BOARD so I can do this in one query
   PK=FAMILY#familyId AND SK = PROFILE: familyProfile
   PK=FAMILY#familyId AND SK begins_with(MEMBER#): familyMembers and familyMemberGifts
   
   */
 
 
-  // // userId (sub) will be on the context from the authorizer lambda
-  // const { familyId, username, giftId } = event.pathParameters;
+  const { familyId } = event.pathParameters;
 
-  // // GET /families/{id}/users/{username}/gifts/{giftId}
   // const input: GetItemCommandInput = {
   //   "Key": {
   //     "PK": {
@@ -59,12 +60,12 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
 
   // console.log({response});
   
-  // return {
-  //   statusCode: 200,
-  //   headers: {
-  //     "Access-Control-Allow-Origin": "*",
-  //     "Access-Control-Allow-Credentials": true
-  //   },
-  //   body: JSON.stringify(response.Item)
-  // };
+  return {
+    statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true
+    },
+    body: JSON.stringify({message: 'working on it :)'})
+  };
 };
