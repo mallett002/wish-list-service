@@ -23,7 +23,6 @@ export class Auth extends Construct {
             architecture: lambda.Architecture.ARM_64,
         });
 
-        // TODO: changed this from grantReadWrite. Make sure this works
         props.table.grantWriteData(this.postConfirmationLambda);
 
         const userPool = new cognito.UserPool(this, 'wish-list-cognito-user-pool', {

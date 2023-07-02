@@ -10,13 +10,16 @@ export const handler = async (event: PostConfirmationTriggerEvent): Promise<Post
     const input = {
       Item: {
         PK: {
-          S: `MEMBER#${email}`
+          S: `MEMBER#${sub}` // this should be email, I think. Or have to use userId everywhere
         },
         SK: {
           S: `PROFILE`
         },
-        userId: {
-          S: sub || ""
+        email: {
+          S: email || ""
+        },
+        alias: {
+          S: ''
         }
       },
       ReturnConsumedCapacity: 'TOTAL',

@@ -17,7 +17,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
 // {
 //     "familyId": "family1",
 //     "username": "mallett002@gmail.com",
-//     "giftId": "gift1",
+//     "giftId": "gift1", // todo: create this guid in this handler. don't pass it in.
 //     "description": "hat",
 //     "link": "google.com",
 //     "title": "Hat"
