@@ -1,4 +1,4 @@
-import { DynamoDBClient, PutItemCommand, GetItemCommand, GetItemCommandInput } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, BatchWriteItemCommand, GetItemCommand, GetItemCommandInput } from '@aws-sdk/client-dynamodb';
 import crypto from 'crypto';
 
 import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
@@ -9,6 +9,8 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
 
     const client = new DynamoDBClient({ region: "us-east-1" });
     const { familyName, familyImage } = JSON.parse(event.body || '{}');
+
+    // Get member from auth context
     const { userId } = event.requestContext.authorizer;
 
     const getMemberInput: GetItemCommandInput = {
@@ -25,65 +27,59 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
 
     const getMemberCommand = new GetItemCommand(getMemberInput);
     const { Item } = await client.send(getMemberCommand);
-    console.log({Item});
-    
 
+    // if member, create family member and family
     if (Item && Item.email && Item.email.S) {
         const email = Item.email.S;
         const alias = Item.alias.S;
-        const familyId = `FAMILY#${crypto.randomUUID()}`;
+        const familyId = crypto.randomUUID();
 
-        console.log({familyId});
-        
-
-        const createFamilyInput = {
-            Item: {
-                PK: {
-                    S: `FAMILY#${familyId}`
-                },
-                SK: {
-                    S: 'PROFILE'
-                },
-                familyName: {
-                    S: familyName
-                },
-                familyImage: {
-                    S: familyImage
-                },
-            },
-            ReturnConsumedCapacity: 'TOTAL',
-            TableName: 'wish-list-table'
+        const input = {
+            "RequestItems": {
+                "wish-list-table": [
+                    {
+                        "PutRequest": {
+                            "Item": {
+                                "PK": {
+                                    "S": `FAMILY#${familyId}`
+                                },
+                                "SK": {
+                                    "S": 'PROFILE'
+                                },
+                                "familyName": {
+                                    "S": familyName
+                                },
+                                "familyImage": {
+                                    "S": familyImage
+                                },
+                            },
+                        }
+                    },
+                    {
+                        "PutRequest": {
+                            "Item": {
+                                "PK": {
+                                    "S": `FAMILY#${familyId}`
+                                },
+                                "SK": {
+                                    "S": `MEMBER#${email}`
+                                },
+                                "alias": {
+                                    "S": alias
+                                },
+                                "email": {
+                                    "S": email
+                                },
+                            }
+                        }
+                    }
+                ]
+            }
         };
-        const createFamilyMemberInput = {
-            Item: {
-                PK: {
-                    S: `FAMILY#${familyId}`
-                },
-                SK: {
-                    S: `MEMBER#${email}`
-                },
-                alias: {
-                    S: alias
-                },
-                email: {
-                    S: email
-                },
-            },
-            ReturnConsumedCapacity: 'TOTAL',
-            TableName: 'wish-list-table'
-        };
-        console.log({createFamilyInput, createFamilyMemberInput})
 
-        const createFamilyCommand = new PutItemCommand(createFamilyInput);
-        const createFamilyMemberCommand = new PutItemCommand(createFamilyMemberInput);
-        console.log({createFamilyCommand, createFamilyMemberCommand});
-        
+        const command = new BatchWriteItemCommand(input);
 
-        const createFamilyResult = await client.send(createFamilyCommand);
-        const createFamilyMemberResult = await client.send(createFamilyMemberCommand);
-
-        // Getting "Cannot read properties of undefined (reading '0')" on client.send
-        console.log({createFamilyResult, createFamilyMemberResult});
+        await client.send(command);
 
         return {
             statusCode: 201,
