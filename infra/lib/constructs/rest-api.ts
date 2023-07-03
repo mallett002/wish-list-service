@@ -72,6 +72,7 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.postGiftLambda);
 
+        // Todo: make this a PUT to update the gift
         // Get gift: GET /families/{id}/members/{memberId}/gifts/{giftId}
         // const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
         // gift.addMethod('GET', getGiftIntegration, {
