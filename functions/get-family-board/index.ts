@@ -72,7 +72,69 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
 
   const response = await client.send(command);
 
-  console.log({response});
+  /* Example response:
+{
+    "$metadata": {
+      "httpStatusCode": 200,
+      "requestId": "IF3IJNU7PDSGGJAGLIM47NLJAJVV4KQNSO5AEMVJF66Q9ASUAAJG",
+      "attempts": 1,
+      "totalRetryDelay": 0
+    },
+    "Count": 3,
+    "Items": [
+      {
+        "familyImage": {
+          "S": "somerandomimage"
+        },
+        "SK": {
+          "S": "MEMBER#BOARD"
+        },
+        "PK": {
+          "S": "FAMILY#9c10c193-c4c5-40d7-91a1-e458908b849c"
+        },
+        "familyName": {
+          "S": "Mallett"
+        }
+      },
+      {
+        "alias": {
+          "S": ""
+        },
+        "SK": {
+          "S": "MEMBER#c438b4a8-c011-70b8-662a-032d03cf41be"
+        },
+        "PK": {
+          "S": "FAMILY#9c10c193-c4c5-40d7-91a1-e458908b849c"
+        },
+        "email": {
+          "S": "mallett002@gmail.com"
+        }
+      },
+      {
+        "purchased": {
+          "BOOL": false
+        },
+        "SK": {
+          "S": "MEMBER#c438b4a8-c011-70b8-662a-032d03cf41beGIFT#4ff01607-6d82-4d33-b846-d50d7f4fdb3b"
+        },
+        "link": {
+          "S": "google.com"
+        },
+        "description": {
+          "S": "hat"
+        },
+        "PK": {
+          "S": "FAMILY#9c10c193-c4c5-40d7-91a1-e458908b849c"
+        },
+        "title": {
+          "S": "Hat"
+        }
+      }
+    ],
+    "ScannedCount": 3
+  }
+
+  */
   
   return {
     statusCode: 200,
