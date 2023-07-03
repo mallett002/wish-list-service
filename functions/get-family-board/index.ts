@@ -1,4 +1,4 @@
-import { DynamoDBClient, GetItemCommand, GetItemCommandInput } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, QueryCommand, QueryCommandInput } from '@aws-sdk/client-dynamodb';
 import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 
 
@@ -55,10 +55,24 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
   //   "TableName": "wish-list-table"
   // };
 
-  // const command = new GetItemCommand(input);
-  // const response = await client.send(command);
+  const command = new QueryCommand({
+    TableName: 'wish-list-table',
+    KeyConditionExpression: `#PK = :PK AND begins_with(#SK, :SK)`,
+    ExpressionAttributeNames: {
+      "#PK": "PK",
+      "#SK": "SK"
+    },
+    ExpressionAttributeValues: {
+      ":PK": {S: `FAMILY#${familyId}`},
+      ":SK": {S: `MEMBER#`}
+    },
+    ConsistentRead: true,
+    // ScanIndexForward: false
+  });
 
-  // console.log({response});
+  const response = await client.send(command);
+
+  console.log({response});
   
   return {
     statusCode: 200,
@@ -66,6 +80,6 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Credentials": true
     },
-    body: JSON.stringify({message: 'working on it :)'})
+    body: JSON.stringify(response)
   };
 };

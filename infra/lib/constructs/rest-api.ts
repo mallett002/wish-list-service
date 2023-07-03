@@ -9,6 +9,7 @@ interface WishListRestApiProps {
     postGiftLambda: lambda.Function,
     getGiftLambda: lambda.Function,
     createFamilyLambda: lambda.Function,
+    getFamilyBoardLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -46,8 +47,9 @@ export class WishListRestApi extends Construct {
 
         const families = api.root.addResource('families');
         const family = families.addResource('{familyId}');
-        const users = family.addResource('users');
-        const memberId = users.addResource('{memberId}');
+        const members = family.addResource('members');
+        const board = family.addResource('board');
+        const memberId = members.addResource('{memberId}');
         const gifts = memberId.addResource('gifts');
         const gift = gifts.addResource('{giftId}');
 
@@ -59,7 +61,7 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.createFamilyLambda);
 
-        // Create gift: POST /families/{id}/users/{memberId}/gifts/
+        // Create gift: POST /families/{id}/members/{memberId}/gifts/
         const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, { proxy: true });
         gifts.addMethod('POST', postGiftIntegration, {
             authorizer: authorizer,
@@ -70,15 +72,26 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.postGiftLambda);
 
-        // Get gift: GET /families/{id}/users/{memberId}/gifts/{giftId}
-        const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
-        gift.addMethod('GET', getGiftIntegration, {
+        // Get gift: GET /families/{id}/members/{memberId}/gifts/{giftId}
+        // const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
+        // gift.addMethod('GET', getGiftIntegration, {
+        //     authorizer: authorizer,
+        //     authorizationType: apigateway.AuthorizationType.CUSTOM,
+        // });
+        // gift.addCorsPreflight({
+        //     allowOrigins: ['localhost']
+        // });
+        // authLambda.grantInvoke(props.getGiftLambda);
+
+        // Get family board: GET /families/{id}/board
+        const getFamilyBoardIntegration = new apigateway.LambdaIntegration(props.getFamilyBoardLambda, { proxy: true });
+        board.addMethod('GET', getFamilyBoardIntegration, {
             authorizer: authorizer,
             authorizationType: apigateway.AuthorizationType.CUSTOM,
         });
-        gift.addCorsPreflight({
+        board.addCorsPreflight({
             allowOrigins: ['localhost']
         });
-        authLambda.grantInvoke(props.getGiftLambda);
+        authLambda.grantInvoke(props.getFamilyBoardLambda);
     }
 }

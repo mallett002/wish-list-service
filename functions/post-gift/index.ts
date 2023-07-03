@@ -10,8 +10,8 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     console.log('logging context...');
     console.log(JSON.stringify(context, null, 2));
 
-    // PK: FAMILY#<familyId>    ex: FAMILY#ABE1D7B5-4EEA-4C78-A51B-3B6C1314DBCW
-    // SK: #MEMBER#<username>#GIFT#<giftId>    ex: #MEMBER#mallett002@gmail.com#GIFT#C2D9F0C7-83A5-4303-B319-C918C8473434
+    // PK: FAMILY#<familyId>
+    // SK: MEMBER#<memberId>#GIFT#<giftId>
     const { familyId, memberId, description, link, title } = JSON.parse(event.body || '{}');
 // {
 //     "familyId": "family1",
@@ -53,7 +53,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                     S: title
                 },
                 purchased: {
-                    BOOL: false
+                    BOOL: false // todo: make an update gift handler to mark as purchased
                 }
             },
             ReturnConsumedCapacity: 'TOTAL',

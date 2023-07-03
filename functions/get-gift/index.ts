@@ -8,7 +8,7 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
 
   const { familyId, memberId, giftId } = event.pathParameters;
 
-  // GET /families/{id}/users/{memberId}/gifts/{giftId}
+  // GET /families/{id}/members/{memberId}/gifts/{giftId}
   const input: GetItemCommandInput = {
     "Key": {
       "PK": {
