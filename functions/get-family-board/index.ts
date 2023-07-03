@@ -34,26 +34,12 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
   }
 
   QueryCommand: https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/dynamodb/command/QueryCommand/
-  Maybe I should save family profile as PK=FAMILY#familyId AND SK = MEMBER#BOARD so I can do this in one query
-  PK=FAMILY#familyId AND SK = PROFILE: familyProfile
   PK=FAMILY#familyId AND SK begins_with(MEMBER#): familyMembers and familyMemberGifts
   
   */
 
 
   const { familyId } = event.pathParameters;
-
-  // const input: GetItemCommandInput = {
-  //   "Key": {
-  //     "PK": {
-  //       "S": `FAMILY#${familyId}`
-  //     },
-  //     "SK": {
-  //       "S": `#MEMBER#${username}#GIFT#${giftId}`
-  //     }
-  //   },
-  //   "TableName": "wish-list-table"
-  // };
 
   const command = new QueryCommand({
     TableName: 'wish-list-table',
