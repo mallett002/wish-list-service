@@ -10,27 +10,25 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
   
   should return something like:
   {
-    familyId: {
-      familyId,
-      familyName
-      familyImage
-      members: [
-        {
-          alias,
-          email,
-          memberId
-          gifts: [
-            {
-              giftId,
-              description,
-              image,
-              title
-              ... other gift attributes
-            }
-          ]
-        }
-      ]
-    }
+    familyId,
+    familyName
+    familyImage
+    members: [
+      {
+        alias,
+        email,
+        memberId
+        gifts: [
+          {
+            giftId,
+            description,
+            image,
+            title
+            ... other gift attributes
+          }
+        ]
+      }
+    ]
   }
 
   QueryCommand: https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/dynamodb/command/QueryCommand/
@@ -38,9 +36,8 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
   
   */
 
-
-  const { familyId } = event.pathParameters;
-
+ const { familyId } = event.pathParameters;
+ 
   const command = new QueryCommand({
     TableName: 'wish-list-table',
     KeyConditionExpression: `#PK = :PK AND begins_with(#SK, :SK)`,
@@ -52,13 +49,67 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
       ":PK": {S: `FAMILY#${familyId}`},
       ":SK": {S: `MEMBER#`}
     },
-    ConsistentRead: true,
-    // ScanIndexForward: false
+    ConsistentRead: true
   });
 
   const response = await client.send(command);
+  console.log({response});
+  
+  if (!response.Items || !response.Items.length) {
+    return {
+      statusCode: 404,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true
+      },
+      body: JSON.stringify({message: 'Not Found'})
+    };
+  }
 
-  /* Example response:
+  const familyProfile = response.Items.find(({SK}) => SK.S === 'MEMBER#BOARD');
+  const members = response.Items.filter(({SK}) => !SK.S?.includes('GIFT#') && SK.S?.includes('MEMBER#'));
+  const gifts = response.Items
+  .filter(({SK}) => SK && SK.S && SK.S.includes('GIFT#'))
+  .map((gift) => {
+    const [memberId, giftId] = gift.SK && gift.SK.S && gift?.SK?.S.split('MEMBER#')[1].split('GIFT#') || ['', ''];
+
+    return {
+      purchased: gift.purchased.BOOL,
+      memberId,
+      giftId,
+      link: gift.link.S,
+      description: gift.description.S,
+      familyId: gift.PK.S?.replace('FAMILY#', ''),
+      title: gift.title.S
+    };
+  });
+
+  const membersWithGifts = members.map((member) => {
+    const giftsForMember = gifts.filter((gift) => member.SK && member.SK.S && member.SK.S.includes(gift.memberId));
+
+    return {
+      alias: member.alias.S,
+      memberId: member.SK.S?.replace('MEMBER#', ''),
+      email: member.email.S,
+      gifts: giftsForMember
+    };
+  });
+
+  const boardResult = {
+    ...familyProfile,
+    members: membersWithGifts
+  };
+
+  return {
+    statusCode: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Credentials": true
+    },
+    body: JSON.stringify(boardResult)
+  };
+    
+  /* Example response from db query:
 {
     "$metadata": {
       "httpStatusCode": 200,
@@ -121,13 +172,4 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
   }
 
   */
-  
-  return {
-    statusCode: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Credentials": true
-    },
-    body: JSON.stringify(response)
-  };
 };
