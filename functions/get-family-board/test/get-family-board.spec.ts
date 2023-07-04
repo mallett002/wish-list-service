@@ -1,6 +1,7 @@
 import {handler} from '..';
 import { DynamoDBClient, QueryCommand } from '@aws-sdk/client-dynamodb';
 import Chance from 'chance';
+import {buildQueryResult} from './board-factory';
 
 const chance = new Chance();
 
@@ -16,6 +17,7 @@ describe('get-family-board', () => {
         expectedEvent: { pathParameters: { familyId: any; }; },
         queryCommandResult,
         mockedSend,
+        queryResult,
         expectedFamilyId;
     
     beforeEach(() => {
@@ -28,11 +30,12 @@ describe('get-family-board', () => {
                 familyId: expectedFamilyId
             }
         }
-        queryCommandResult = Symbol('queryCommandResult')
+        queryCommandResult = Symbol('queryCommandResult');
+        queryResult = buildQueryResult();
 
         mockedDBClient.mockReturnValue(dbClient);
         mockedQeuryCommand.mockReturnValue(queryCommandResult);
-        mockedSend.mockResolvedValue({}); // todo: create items from db
+        mockedSend.mockResolvedValue(queryResult); // todo: create items from db
     });
 
     it('should work', async () => {

@@ -67,11 +67,16 @@ export const handler = async (event: any, context?: any): Promise<APIGatewayProx
   }
 
   const familyProfile = response.Items.find(({SK}) => SK.S === 'MEMBER#BOARD');
-  const members = response.Items.filter(({SK}) => !SK.S?.includes('GIFT#') && SK.S?.includes('MEMBER#'));
+  
+  const members = response.Items.filter(({SK}) => 
+    !SK.S?.includes('GIFT#')
+    && SK.S?.includes('MEMBER#')
+    && !SK.S?.includes('BOARD'));
+
   const gifts = response.Items
   .filter(({SK}) => SK && SK.S && SK.S.includes('GIFT#'))
   .map((gift) => {
-    const [memberId, giftId] = gift.SK && gift.SK.S && gift?.SK?.S.split('MEMBER#')[1].split('GIFT#') || ['', ''];
+    const [memberId, giftId] = gift.SK && gift.SK.S && gift.SK.S.split('MEMBER#')[1].split('GIFT#') || ['', ''];
 
     return {
       purchased: gift.purchased.BOOL,
