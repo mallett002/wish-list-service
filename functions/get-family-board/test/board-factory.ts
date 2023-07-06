@@ -2,7 +2,7 @@ import Chance from 'chance';
 
 const chance = new Chance();
 
-const createMember = (familyId: string) => ({
+const createFamilyMember = (familyId: string) => ({
     "alias": {
         "S": chance.first()
       },
@@ -65,18 +65,22 @@ export const buildQueryResult = () => {
           ]
     };
 
-    for (let i = 0; i < 2; i++) {
-        const member = createMember(familyId);
+    for (let i = 0; i < 3; i++) {
+        const member = createFamilyMember(familyId);
+
+        result.Items.push(member);
+
         const memberId = member.SK.S.replace('MEMBER#', '');
 
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < chance.d4(); i++) {
             // @ts-ignore
             result.Items.push(createGift(familyId, memberId));
         }
-
-        // @ts-ignore
-        result.Items.push(createMember(familyId));
     }
+
+    result.Items.sort();
+
+    console.log(JSON.stringify(result, null, 2));
 
     return result;
 };

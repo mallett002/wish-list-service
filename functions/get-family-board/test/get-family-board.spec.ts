@@ -35,7 +35,7 @@ describe('get-family-board', () => {
 
         mockedDBClient.mockReturnValue(dbClient);
         mockedQeuryCommand.mockReturnValue(queryCommandResult);
-        mockedSend.mockResolvedValue(queryResult); // todo: create items from db
+        mockedSend.mockResolvedValue(queryResult);
     });
 
     it('should work', async () => {
