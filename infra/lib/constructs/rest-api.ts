@@ -52,7 +52,7 @@ export class WishListRestApi extends Construct {
         const board = family.addResource('board');
         const memberId = members.addResource('{memberId}');
         const gifts = memberId.addResource('gifts');
-        const memberFamilies = memberId.addResource('families');
+        const memberFamilies = memberId.addResource('member-families');
         const gift = gifts.addResource('{giftId}');
 
         // Create family: POST /families
@@ -103,7 +103,7 @@ export class WishListRestApi extends Construct {
             authorizer: authorizer,
             authorizationType: apigateway.AuthorizationType.CUSTOM,
         });
-        board.addCorsPreflight({
+        memberFamilies.addCorsPreflight({
             allowOrigins: ['localhost']
         });
         authLambda.grantInvoke(props.getFamiliesForMemberLambda);
