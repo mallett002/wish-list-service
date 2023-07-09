@@ -12,7 +12,7 @@ function createMemberInput() {
                     S: `MEMBER#${chance.guid()}`
                 },
                 SK: {
-                    S: `PROFILE`
+                    S: `PROFILE` // todo make email
                 },
                 email: {
                     S: chance.email()

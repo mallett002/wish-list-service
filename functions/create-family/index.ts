@@ -19,7 +19,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                 "S": `MEMBER#${memberId}`
             },
             "SK": {
-                "S": 'PROFILE'
+                "S": 'PROFILE' // TODO: make this the email
             }
         },
         "TableName": "wish-list-table"
