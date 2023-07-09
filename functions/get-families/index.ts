@@ -28,6 +28,17 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
   const queryFamilyMembersResponse = await client.send(command);
   console.log({queryFamilyMembersResponse});
 
+  if (!queryFamilyMembersResponse.Items || !queryFamilyMembersResponse.Items.length) {
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true
+      },
+      body: { families: [] }
+    };
+  }
+
   const familyIds = queryFamilyMembersResponse.Items.map(({ PK }) => ({ PK, SK: {S: 'MEMBER#BOARD' }}));
 
   const batchGetInput = {
