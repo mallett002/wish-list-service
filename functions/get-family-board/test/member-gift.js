@@ -46,7 +46,7 @@ function createFamilyInput(familyId) {
     };
 }
 
-function createFamilyMember(familyId) {
+function createFamilyMember(familyId, alias, email, memberId) {
     return {
         "PutRequest": {
             "Item": {
@@ -54,19 +54,45 @@ function createFamilyMember(familyId) {
                     "S": `FAMILY#${familyId}`
                 },
                 "SK": {
-                    "S": `MEMBER#${chance.guid()}`
+                    "S": `MEMBER#${memberId}`
                 },
                 "alias": {
-                    "S": chance.first()
+                    "S": alias
                 },
                 "email": {
-                    "S": chance.email()
+                    "S": email
                 },
             }
         }
     }
 }
 
+function createGift(familyId, memberId) {
+    return {
+        PutRequest: {
+            Item: {
+                PK: {
+                    S: `FAMILY#${familyId}`
+                },
+                SK: {
+                    S: `MEMBER#${memberId}GIFT#${chance.guid()}`
+                },
+                description: {
+                    S: chance.sentence()
+                },
+                link: {
+                    S: chance.url()
+                },
+                title: {
+                    S: chance.string()
+                },
+                purchased: {
+                    BOOL: chance.bool()
+                }
+            }
+        }
+    }
+}
 
 async function putItems(input) {
     const command = new BatchWriteItemCommand(input);
@@ -76,7 +102,7 @@ async function putItems(input) {
     console.log(JSON.stringify({result}));
 }
 
-async function queryBoard(memberId) {
+async function queryBoard(familyId) {
     const command = new QueryCommand({
         TableName: 'wish-list-table',
         KeyConditionExpression: `#PK = :PK AND begins_with(#SK, :SK)`,
@@ -85,11 +111,11 @@ async function queryBoard(memberId) {
           "#SK": "SK"
         },
         ExpressionAttributeValues: {
-          ":PK": { S: `MEMBER#${memberId}` },
-          ":SK": { S: `FAMILY#` }
+          ":PK": {S: `FAMILY#${familyId}`},
+          ":SK": {S: `MEMBER#`}
         },
-        ConsistentRead: false,
-        IndexName: 'inverse-composite'
+        ConsistentRead: true,
+        ScanIndexForward: true
       });
 
       const response = await client.send(command);
@@ -99,12 +125,27 @@ async function queryBoard(memberId) {
 (async function doIt() {
     const memberInputs = [];
     const familyMemberInputs = [];
+    const giftInputs = [];
+
+
+    const familyId = chance.guid();
+
+    const familyInput = createFamilyInput(familyId);
 
     for (let i = 0; i < 3; i++) {
-        const familyId = chance.guid();
-        const familyInput = createFamilyInput(familyId);
-        const familyMember = createFamilyMember(familyId);
+        const member = createMemberInput();
 
+        const {PutRequest: {Item: memberItem}} = member;
+        const memberId = memberItem.PK.S.replace('MEMBER#', '');
+
+        const familyMember = createFamilyMember(
+            familyId,
+            memberItem.alias.S,
+            memberItem.email.S,
+            memberId
+        );
+
+        memberInputs.push(member);
         familyMemberInputs.push(familyMember);
 
         for (let i = 0; i < chance.d6(); i++) {
@@ -117,8 +158,6 @@ async function queryBoard(memberId) {
         ...familyMemberInputs,
         ...giftInputs
     ];
-
-    // console.log({length: itemsToPush.length});
 
     const input = {
         "RequestItems": {
