@@ -16,7 +16,6 @@ interface WishListRestApiProps {
 }
 
 
-// Todo: Change users to members
 // Going through this guide: https://aws-cdk.com/cognito-google
 // hosted UI accessible at: https://wish-list.auth.us-east-1.amazoncognito.com/
 // redirect URI for Google: https://wish-list.auth.us-east-1.amazoncognito.com/oauth2/idpresponse

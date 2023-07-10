@@ -5,6 +5,8 @@ const chance = new Chance();
 const client = new DynamoDBClient({ region: "us-east-1" });
 
 function createMemberInput() {
+    const email = chance.email();
+
     return {
         PutRequest: {
             Item: {
@@ -12,7 +14,7 @@ function createMemberInput() {
                     S: `MEMBER#${chance.guid()}`
                 },
                 SK: {
-                    S: `PROFILE` // todo make email
+                    S: `EMAIL#${email}`
                 },
                 email: {
                     S: chance.email()
