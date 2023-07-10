@@ -38,7 +38,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
   }
 
   const [familyProfile] = response.Items.filter(({ SK }) => SK.S === 'MEMBER#BOARD').map((item) => ({
-    familyId: item.PK.S.replace('FAMILY#', '') || '',
+    familyId: item?.PK?.S.replace('FAMILY#', '') || '',
     familyName: item.familyName.S,
     familyImage: item.familyImage.S,
   }));
@@ -47,7 +47,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     !SK.S?.includes('GIFT#')
     && SK.S?.includes('MEMBER#')
     && !SK.S?.includes('BOARD')).map((member) => ({
-      memberId: member.SK.S.replace('MEMBER#', ''),
+      memberId: member?.SK?.S.replace('MEMBER#', ''),
       alias: member.alias.S,
       email: member.email.S
     }));

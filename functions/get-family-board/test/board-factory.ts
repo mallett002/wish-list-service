@@ -36,7 +36,7 @@ const createGift = (familyId: string, memberId: string) => ({
       "title": {
         "S": chance.string()
       }
-})
+});
 
 export const buildQueryResult = () => {
     const familyId = chance.guid();

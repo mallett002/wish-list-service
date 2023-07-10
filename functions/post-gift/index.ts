@@ -1,5 +1,5 @@
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import crypto from 'node:crypto';
+import {randomUUID} from 'node:crypto';
 import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 
 export const handler = async (event: APIGatewayProxyEvent, context?: any): Promise<APIGatewayProxyResult> => {
@@ -34,7 +34,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     }
 
     try {
-        const giftId = crypto.randomUUID();
+        const giftId = randomUUID();
         const input = {
             Item: {
                 PK: {

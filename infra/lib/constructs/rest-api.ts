@@ -10,6 +10,7 @@ interface WishListRestApiProps {
     getGiftLambda: lambda.Function,
     createFamilyLambda: lambda.Function,
     getFamilyBoardLambda: lambda.Function,
+    getFamiliesForMemberLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -51,6 +52,7 @@ export class WishListRestApi extends Construct {
         const board = family.addResource('board');
         const memberId = members.addResource('{memberId}');
         const gifts = memberId.addResource('gifts');
+        const memberFamilies = memberId.addResource('families');
         const gift = gifts.addResource('{giftId}');
 
         // Create family: POST /families
@@ -94,5 +96,16 @@ export class WishListRestApi extends Construct {
             allowOrigins: ['localhost']
         });
         authLambda.grantInvoke(props.getFamilyBoardLambda);
+
+        // Get families for member: GET /members/{memberId}/families
+        const getFamiliesForMemberIntegration = new apigateway.LambdaIntegration(props.getFamiliesForMemberLambda, { proxy: true });
+        memberFamilies.addMethod('GET', getFamiliesForMemberIntegration, {
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+        });
+        memberFamilies.addCorsPreflight({
+            allowOrigins: ['localhost']
+        });
+        authLambda.grantInvoke(props.getFamiliesForMemberLambda);
     }
 }

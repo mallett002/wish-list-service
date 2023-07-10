@@ -1,5 +1,5 @@
 import { DynamoDBClient, BatchWriteItemCommand, GetItemCommand, GetItemCommandInput } from '@aws-sdk/client-dynamodb';
-import crypto from 'crypto';
+import {randomUUID} from 'node:crypto';
 
 import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 
@@ -11,7 +11,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     const { familyName, familyImage } = JSON.parse(event.body || '{}');
 
     // Get member from auth context
-    const { memberId } = event.requestContext.authorizer;
+    const { memberId }: any = event.requestContext.authorizer;
 
     const getMemberInput: GetItemCommandInput = {
         "Key": {
@@ -19,7 +19,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                 "S": `MEMBER#${memberId}`
             },
             "SK": {
-                "S": 'PROFILE'
+                "S": 'PROFILE' // TODO: make this the email
             }
         },
         "TableName": "wish-list-table"
@@ -32,7 +32,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     if (Item && Item.email && Item.email.S) {
         const email = Item.email.S;
         const alias = Item.alias.S;
-        const familyId = crypto.randomUUID();
+        const familyId = randomUUID();
 
         const input = {
             "RequestItems": {
