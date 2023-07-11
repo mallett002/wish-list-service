@@ -19,6 +19,19 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const { memberId, email } = JSON.parse(event.body || '{}'); // what to pass in?
     const { familyId }: ICreateInvitationParams = event.pathParameters;
 
+    if (!memberId || !email) {
+        console.log('missing memberId or email', {memberId, email});
+        
+        return {
+            statusCode: 400,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": true // Todo: what is this header? do I need it? It's in all my requests
+            },
+            body: JSON.stringify({ message: 'Bad Request' })
+        };        
+    }
+
     try {
 
         return {
