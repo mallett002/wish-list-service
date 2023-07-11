@@ -16,11 +16,11 @@ interface ICreateInvitationParams extends APIGatewayProxyEventPathParameters {
 export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
 
     // const client = new DynamoDBClient({ region: "us-east-1" });
-    const { memberId, email } = JSON.parse(event.body || '{}'); // what to pass in?
+    const { memberId } = JSON.parse(event.body); // what to pass in?
     const { familyId }: ICreateInvitationParams = event.pathParameters;
 
-    if (!memberId || !email) {
-        console.log('missing memberId or email', {memberId, email});
+    if (!memberId) {
+        console.log('missing memberId');
         
         return {
             statusCode: 400,
@@ -34,13 +34,23 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
 
     try {
 
+        // Todo: create invitation with PK=FAMILY#<familyId>, SK=MEMBER#<memberId>#INVITATION
+        /**
+         * Invitation:
+         *  {
+         *      PK,
+         *      SK,
+         *      status: 'PENDING' | 'REJECTED'
+         *  }
+         */
+
         return {
             statusCode: 201,
             headers: {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": true
             },
-            body: JSON.stringify({ created: { familyId, email } })
+            body: JSON.stringify({ 'message': 'Created' })
         };
     } catch (error) {
         return {

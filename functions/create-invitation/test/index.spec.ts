@@ -11,7 +11,6 @@ describe('create-invitation', () => {
             },
             body: JSON.stringify({
                 memberId: 'member1',
-                email: 'mallett002@gmail.com'
             })
         }
     });
