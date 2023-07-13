@@ -17,6 +17,18 @@ const createFamilyMember = (familyId: string) => ({
       }
 });
 
+const createInvitation = (familyId: string) => ({
+    "status": {
+        "S": 'PENDING'
+      },
+      "SK": {
+        "S": `MEMBER#${chance.guid()}#INVITATION`
+      },
+      "PK": {
+        "S": `FAMILY#${familyId}`
+      },
+});
+
 const createGift = (familyId: string, memberId: string) => ({
     "purchased": {
         "BOOL": chance.bool()
@@ -69,6 +81,7 @@ export const buildQueryResult = () => {
         const member = createFamilyMember(familyId);
 
         result.Items.push(member);
+        result.Items.push(createInvitation(familyId))
 
         const memberId = member.SK.S.replace('MEMBER#', '');
 

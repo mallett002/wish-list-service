@@ -27,6 +27,24 @@ function createMemberInput() {
     };
 }
 
+function createInvitation(familyId) {
+    return {
+        "PutRequest": {
+            "Item": {
+                "status": {
+                    "S": 'PENDING'
+                },
+                "SK": {
+                    "S": `MEMBER#${chance.guid()}#INVITATION`
+                },
+                "PK": {
+                    "S": `FAMILY#${familyId}`
+                },
+            }
+        }
+    }
+}
+
 function createFamilyInput(familyId) {
     return {
         "PutRequest": {
@@ -101,7 +119,7 @@ async function putItems(input) {
 
     const result = await client.send(command);
 
-    console.log(JSON.stringify({result}));
+    console.log(JSON.stringify({ result }));
 }
 
 async function queryBoard(familyId) {
@@ -109,26 +127,26 @@ async function queryBoard(familyId) {
         TableName: 'wish-list-table',
         KeyConditionExpression: `#PK = :PK AND begins_with(#SK, :SK)`,
         ExpressionAttributeNames: {
-          "#PK": "PK",
-          "#SK": "SK"
+            "#PK": "PK",
+            "#SK": "SK"
         },
         ExpressionAttributeValues: {
-          ":PK": {S: `FAMILY#${familyId}`},
-          ":SK": {S: `MEMBER#`}
+            ":PK": { S: `FAMILY#${familyId}` },
+            ":SK": { S: `MEMBER#` }
         },
         ConsistentRead: true,
         ScanIndexForward: true
-      });
+    });
 
-      const response = await client.send(command);
-      console.log(JSON.stringify({response}, null, 2));
+    const response = await client.send(command);
+    console.log(JSON.stringify({ response }, null, 2));
 }
 
 (async function doIt() {
     const memberInputs = [];
     const familyMemberInputs = [];
     const giftInputs = [];
-
+    const invitationInputs = [];
 
     const familyId = chance.guid();
 
@@ -137,7 +155,7 @@ async function queryBoard(familyId) {
     for (let i = 0; i < 3; i++) {
         const member = createMemberInput();
 
-        const {PutRequest: {Item: memberItem}} = member;
+        const { PutRequest: { Item: memberItem } } = member;
         const memberId = memberItem.PK.S.replace('MEMBER#', '');
 
         const familyMember = createFamilyMember(
@@ -149,6 +167,7 @@ async function queryBoard(familyId) {
 
         memberInputs.push(member);
         familyMemberInputs.push(familyMember);
+        invitationInputs.push(createInvitation(familyId));
 
         for (let i = 0; i < chance.d6(); i++) {
             giftInputs.push(createGift(familyId, memberId));
