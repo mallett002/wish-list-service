@@ -1,4 +1,4 @@
-import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, PutItemCommand, GetItemCommandInput, GetItemCommand } from '@aws-sdk/client-dynamodb';
 import { APIGatewayProxyResult, APIGatewayProxyEventPathParameters } from 'aws-lambda';
 
 interface ICreateInvitationParams extends APIGatewayProxyEventPathParameters {
@@ -26,6 +26,37 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     }
 
     try {
+        // See if invitation already exists for this member + family
+        const getItemInput: GetItemCommandInput = {
+            "Key": {
+                "PK": {
+                    "S": `FAMILY#${familyId}`
+                },
+                "SK": {
+                    "S": `MEMBER#${memberId}#INVITATION`
+                }
+            },
+            "TableName": "wish-list-table"
+        };
+
+        const getItemCommand = new GetItemCommand(getItemInput);
+        const getItemResponse = await client.send(getItemCommand);
+
+        // if exists, return error code
+        if (getItemResponse.Item) {
+            console.log('Invitation already exists, ', getItemResponse.Item);
+            
+            return {
+                statusCode: 409,
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Credentials": true
+                },
+                body: JSON.stringify({ message: 'Conflict' })
+            };
+        }
+
+        // doesn't exist yet, create it
         const input = {
             Item: {
                 PK: {
@@ -63,93 +94,4 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             body: JSON.stringify({ message: 'Something went wrong' })
         };
     }
-
-    // const { memberId }: any = event.requestContext.authorizer;
-
-    // const getMemberInput: GetItemCommandInput = {
-    //     "Key": {
-    //         "PK": {
-    //             "S": `MEMBER#${memberId}`
-    //         },
-    //         "SK": {
-    //             "S": `EMAIL#${creatorEmail}`
-    //         }
-    //     },
-    //     "TableName": "wish-list-table"
-    // };
-
-    // const getMemberCommand = new GetItemCommand(getMemberInput);
-    // const { Item } = await client.send(getMemberCommand);
-
-    // // if member, create family member and family
-    // if (Item && Item.email && Item.email.S) {
-    //     const email = Item.email.S;
-    //     const alias = Item.alias.S;
-    //     const familyId = randomUUID();
-
-    //     const input = {
-    //         "RequestItems": {
-    //             "wish-list-table": [
-    //                 {
-    //                     "PutRequest": {
-    //                         "Item": {
-    //                             "PK": {
-    //                                 "S": `FAMILY#${familyId}`
-    //                             },
-    //                             "SK": {
-    //                                 "S": 'MEMBER#BOARD'
-    //                             },
-    //                             "familyName": {
-    //                                 "S": familyName
-    //                             },
-    //                             "familyImage": {
-    //                                 "S": familyImage
-    //                             },
-    //                         },
-    //                     }
-    //                 },
-    //                 {
-    //                     "PutRequest": {
-    //                         "Item": {
-    //                             "PK": {
-    //                                 "S": `FAMILY#${familyId}`
-    //                             },
-    //                             "SK": {
-    //                                 "S": `MEMBER#${memberId}`
-    //                             },
-    //                             "alias": {
-    //                                 "S": alias
-    //                             },
-    //                             "email": {
-    //                                 "S": email
-    //                             },
-    //                         }
-    //                     }
-    //                 }
-    //             ]
-    //         }
-    //     };
-
-    //     const command = new BatchWriteItemCommand(input);
-
-    //     await client.send(command);
-
-    //     return {
-    //         statusCode: 201,
-    //         headers: {
-    //             "Access-Control-Allow-Origin": "*",
-    //             "Access-Control-Allow-Credentials": true
-    //         },
-    //         body: JSON.stringify({ created: { familyId, email } })
-    //     };
-    // } else {
-    //     return {
-    //         statusCode: 422,
-    //         headers: {
-    //             "Access-Control-Allow-Origin": "*",
-    //             "Access-Control-Allow-Credentials": true
-    //         },
-    //         body: JSON.stringify({ message: 'Unprocessible Entity', reason: 'email not available' })
-    //     };
-    // }
 };
