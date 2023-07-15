@@ -11,12 +11,12 @@ interface WishListRestApiProps {
     createFamilyLambda: lambda.Function,
     getFamilyBoardLambda: lambda.Function,
     getFamiliesForMemberLambda: lambda.Function,
+    createInvitationLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
 
 
-// Todo: Change users to members
 // Going through this guide: https://aws-cdk.com/cognito-google
 // hosted UI accessible at: https://wish-list.auth.us-east-1.amazoncognito.com/
 // redirect URI for Google: https://wish-list.auth.us-east-1.amazoncognito.com/oauth2/idpresponse
@@ -46,14 +46,17 @@ export class WishListRestApi extends Construct {
             resultsCacheTtl: cdk.Duration.seconds(0),
         });
 
-        const families = api.root.addResource('families');
-        const family = families.addResource('{familyId}');
-        const members = family.addResource('members');
-        const board = family.addResource('board');
-        const memberId = members.addResource('{memberId}');
-        const gifts = memberId.addResource('gifts');
-        const memberFamilies = memberId.addResource('families');
-        const gift = gifts.addResource('{giftId}');
+        const families = api.root.addResource('families');  // /families
+        const rootMembers = api.root.addResource('members'); // /members
+        const member = rootMembers.addResource('{memberId}'); // /members/{memberId}
+        const memberFamilies = member.addResource('families'); // /members/{memberId}/families
+        const family = families.addResource('{familyId}');  // /families/{familyId}
+        const members = family.addResource('members');      // /families/{familyId}/members
+        const invitations = family.addResource('invitations'); // /families/{familyId}/invitations
+        const board = family.addResource('board');          // /families/{familyId}/board
+        const memberId = members.addResource('{memberId}'); // /families/{id}/members/{memberId}
+        const gifts = memberId.addResource('gifts'); // /families/{id}/members/{memberId}/gifts
+        const gift = gifts.addResource('{giftId}'); // /families/{id}/members/{memberId}/gifts/{giftId}
 
         // Create family: POST /families
         const createFamilyIntegration = new apigateway.LambdaIntegration(props.createFamilyLambda, { proxy: true, });
@@ -107,5 +110,16 @@ export class WishListRestApi extends Construct {
             allowOrigins: ['localhost']
         });
         authLambda.grantInvoke(props.getFamiliesForMemberLambda);
+
+        // Create invitation: POST /families/{familyId}/invitations
+        const createInvitationIntegration = new apigateway.LambdaIntegration(props.createInvitationLambda, { proxy: true });
+        invitations.addMethod('POST', createInvitationIntegration, {
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+        });
+        invitations.addCorsPreflight({
+            allowOrigins: ['localhost']
+        });
+        authLambda.grantInvoke(props.createInvitationLambda);
     }
 }

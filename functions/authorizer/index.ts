@@ -2,6 +2,8 @@ import { CognitoJwtVerifier } from 'aws-jwt-verify';
 import { APIGatewayAuthorizerResult, PolicyDocument } from 'aws-lambda';
 
 
+// Todo: check if memberId is in the path, if is, make sure it's the same memberId as in the decrypted token
+  // it should only be in the path if the session user is the one making the call
 export const handler = async (event: any): Promise<APIGatewayAuthorizerResult> => {
   console.log(JSON.stringify({event: event.headers}));
   

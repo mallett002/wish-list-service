@@ -18,10 +18,10 @@ export const handler = async (event: PostConfirmationTriggerEvent): Promise<Post
           S: `MEMBER#${sub}`
         },
         SK: {
-          S: `PROFILE` // todo: make this email
+          S: `EMAIL#${email}`
         },
         email: {
-          S: email || ""
+          S: email || "" // todo: maybe remove since have it in the SK
         },
         alias: {
           S: ''
@@ -30,9 +30,9 @@ export const handler = async (event: PostConfirmationTriggerEvent): Promise<Post
       ReturnConsumedCapacity: 'TOTAL',
       TableName: 'wish-list-table'
     };
-    const command = new PutItemCommand(input);
+    const createMemberCommand = new PutItemCommand(input);
 
-    await client.send(command);
+    await client.send(createMemberCommand);
   } catch (err: any) {
     console.log('There was an issue saving the new member to the database', err);
 

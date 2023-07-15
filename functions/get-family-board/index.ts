@@ -43,10 +43,13 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     familyImage: item.familyImage.S,
   }));
 
+  const invitations = response.Items.filter(({ SK }) => SK.S.includes('#INVITATION'));
+
   const members = response.Items.filter(({ SK }) =>
     !SK.S?.includes('GIFT#')
     && SK.S?.includes('MEMBER#')
-    && !SK.S?.includes('BOARD')).map((member) => ({
+    && !SK.S?.includes('BOARD')
+    && !SK.S?.includes('#INVITATION')).map((member) => ({
       memberId: member?.SK?.S.replace('MEMBER#', ''),
       alias: member.alias.S,
       email: member.email.S
@@ -78,6 +81,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
 
   const boardResult = {
     ...familyProfile,
+    invitations,
     members: membersWithGifts
   };
 

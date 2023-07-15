@@ -8,8 +8,9 @@ import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 export const handler = async (event: APIGatewayProxyEvent, context?: any): Promise<APIGatewayProxyResult> => {
 
     const client = new DynamoDBClient({ region: "us-east-1" });
-    const { familyName, familyImage } = JSON.parse(event.body || '{}');
+    const { familyName, familyImage, email: creatorEmail } = JSON.parse(event.body || '{}');
 
+    // TODO: Add try catches to all the db calls in all the handlers
     // Get member from auth context
     const { memberId }: any = event.requestContext.authorizer;
 
@@ -19,7 +20,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                 "S": `MEMBER#${memberId}`
             },
             "SK": {
-                "S": 'PROFILE' // TODO: make this the email
+                "S": `EMAIL#${creatorEmail}`
             }
         },
         "TableName": "wish-list-table"
