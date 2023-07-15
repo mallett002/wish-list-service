@@ -12,6 +12,7 @@ interface WishListRestApiProps {
     getFamilyBoardLambda: lambda.Function,
     getFamiliesForMemberLambda: lambda.Function,
     createInvitationLambda: lambda.Function,
+    searchMemberLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -121,5 +122,25 @@ export class WishListRestApi extends Construct {
             allowOrigins: ['localhost']
         });
         authLambda.grantInvoke(props.createInvitationLambda);
+
+        // Search member: GET /members?email=<email>
+        const searchMemberIntegration = new apigateway.LambdaIntegration(props.searchMemberLambda, { 
+            proxy: true,
+            requestParameters: {
+                "integration.request.querystring.email":
+                "method.request.querystring.email", 
+            }
+         });
+        rootMembers.addMethod('GET', searchMemberIntegration, {
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+            requestParameters: {
+                "method.request.querystring.email": true,
+            }
+        });
+        rootMembers.addCorsPreflight({
+            allowOrigins: ['localhost']
+        });
+        authLambda.grantInvoke(props.searchMemberLambda);
     }
 }
