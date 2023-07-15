@@ -7,7 +7,7 @@ describe('get-families for member', () => {
     beforeEach(() => {
         expectedEvent = {
             pathParameters: {
-                memberId: 'f3970d31-62f6-4fdd-b35b-a79654261b54'
+                memberId: '636c9015-35d3-4006-9567-5411786ea646'
             }
         }
     });
