@@ -49,15 +49,15 @@ export class WishListRestApi extends Construct {
 
         const families = api.root.addResource('families');  // /families
         const rootMembers = api.root.addResource('members'); // /members
-        const member = rootMembers.addResource('{memberId}'); // /members/{memberId}
-        const memberFamilies = member.addResource('families'); // /members/{memberId}/families
+        const member = rootMembers.addResource('{email}'); // /members/{email}
+        const memberFamilies = member.addResource('families'); // /members/{email}/families
         const family = families.addResource('{familyId}');  // /families/{familyId}
         const members = family.addResource('members');      // /families/{familyId}/members
         const invitations = family.addResource('invitations'); // /families/{familyId}/invitations
         const board = family.addResource('board');          // /families/{familyId}/board
-        const memberId = members.addResource('{memberId}'); // /families/{id}/members/{memberId}
-        const gifts = memberId.addResource('gifts'); // /families/{id}/members/{memberId}/gifts
-        const gift = gifts.addResource('{giftId}'); // /families/{id}/members/{memberId}/gifts/{giftId}
+        const familyMember = members.addResource('{email}'); // /families/{id}/members/{email}
+        const gifts = familyMember.addResource('gifts'); // /families/{id}/members/{email}/gifts
+        const gift = gifts.addResource('{giftId}'); // /families/{id}/members/{email}/gifts/{giftId}
 
         // Create family: POST /families
         const createFamilyIntegration = new apigateway.LambdaIntegration(props.createFamilyLambda, { proxy: true, });
@@ -67,7 +67,7 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.createFamilyLambda);
 
-        // Create gift: POST /families/{id}/members/{memberId}/gifts/
+        // Create gift: POST /families/{id}/members/{email}/gifts/
         const postGiftIntegration = new apigateway.LambdaIntegration(props.postGiftLambda, { proxy: true });
         gifts.addMethod('POST', postGiftIntegration, {
             authorizer: authorizer,
@@ -79,7 +79,7 @@ export class WishListRestApi extends Construct {
         authLambda.grantInvoke(props.postGiftLambda);
 
         // Todo: make this a PUT to update the gift
-        // Get gift: GET /families/{id}/members/{memberId}/gifts/{giftId}
+        // Get gift: GET /families/{id}/members/{email}/gifts/{giftId}
         // const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
         // gift.addMethod('GET', getGiftIntegration, {
         //     authorizer: authorizer,
@@ -101,7 +101,7 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.getFamilyBoardLambda);
 
-        // Get families for member: GET /members/{memberId}/families
+        // Get families for member: GET /members/{email}/families
         const getFamiliesForMemberIntegration = new apigateway.LambdaIntegration(props.getFamiliesForMemberLambda, { proxy: true });
         memberFamilies.addMethod('GET', getFamiliesForMemberIntegration, {
             authorizer: authorizer,
@@ -113,7 +113,9 @@ export class WishListRestApi extends Construct {
         authLambda.grantInvoke(props.getFamiliesForMemberLambda);
 
         // Create invitation: POST /families/{familyId}/invitations
-        const createInvitationIntegration = new apigateway.LambdaIntegration(props.createInvitationLambda, { proxy: true });
+        const createInvitationIntegration = new apigateway.LambdaIntegration(props.createInvitationLambda, {
+            proxy: true
+        });
         invitations.addMethod('POST', createInvitationIntegration, {
             authorizer: authorizer,
             authorizationType: apigateway.AuthorizationType.CUSTOM,

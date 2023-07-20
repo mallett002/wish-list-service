@@ -2,13 +2,13 @@ import { DynamoDBClient, QueryCommand, BatchGetItemCommand } from '@aws-sdk/clie
 import { APIGatewayProxyResult, APIGatewayProxyEvent, APIGatewayProxyEventPathParameters } from 'aws-lambda';
 
 interface IGetFamilyBoardParams extends APIGatewayProxyEventPathParameters {
-  memberId: string
+  email: string
 }
 
-// GET /members/{id}/families
+// GET /members/{email}/families
 export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
   const client = new DynamoDBClient({ region: "us-east-1" });
-  const { memberId }: IGetFamilyBoardParams = event.pathParameters;
+  const { email }: IGetFamilyBoardParams = event.pathParameters;
 
   try {
     const command = new QueryCommand({
@@ -19,7 +19,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         "#SK": "SK"
       },
       ExpressionAttributeValues: {
-        ":SK": { S: `MEMBER#${memberId}` },
+        ":SK": { S: `MEMBER#${email}` },
         ":PK": { S: `FAMILY#` }
       },
       ConsistentRead: false,
@@ -76,6 +76,4 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
       body: JSON.stringify({ message: 'Something went wrong.' })
     };
   }
-
-
 };
