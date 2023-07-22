@@ -11,10 +11,6 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     const { familyName, familyImage, email: creatorEmail } = JSON.parse(event.body || '{}');
 
     // TODO: Add try catches to all the db calls in all the handlers
-    // Get member from auth context
-    // Todo: Use just the email
-    // const { memberId }: any = event.requestContext.authorizer;
-
     const getMemberInput: GetItemCommandInput = {
         "Key": {
             "PK": {
