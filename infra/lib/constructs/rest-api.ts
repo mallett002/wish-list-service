@@ -13,6 +13,7 @@ interface WishListRestApiProps {
     getFamiliesForMemberLambda: lambda.Function,
     createInvitationLambda: lambda.Function,
     searchMemberLambda: lambda.Function,
+    handleInvitationLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -58,6 +59,7 @@ export class WishListRestApi extends Construct {
         const familyMember = members.addResource('{email}'); // /families/{id}/members/{email}
         const gifts = familyMember.addResource('gifts'); // /families/{id}/members/{email}/gifts
         const gift = gifts.addResource('{giftId}'); // /families/{id}/members/{email}/gifts/{giftId}
+        const invitation = invitations.addResource('{email}'); // /families/{familyId}/invitations/{email}
 
         // Create family: POST /families
         const createFamilyIntegration = new apigateway.LambdaIntegration(props.createFamilyLambda, { proxy: true, });
@@ -144,5 +146,19 @@ export class WishListRestApi extends Construct {
             allowOrigins: ['localhost']
         });
         authLambda.grantInvoke(props.searchMemberLambda);
+
+
+        // Update invitation: PUT /families/{familyId}/invitations/{email}
+        const handleInvitationIntegration = new apigateway.LambdaIntegration(props.handleInvitationLambda, {
+            proxy: true
+        });
+        invitation.addMethod('PUT', handleInvitationIntegration, {
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+        });
+        invitation.addCorsPreflight({
+            allowOrigins: ['localhost']
+        });
+        authLambda.grantInvoke(props.handleInvitationLambda);
     }
 }
