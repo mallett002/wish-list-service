@@ -13,11 +13,12 @@ describe('handle-invitation', () => {
     beforeEach(() => {
         expectedEvent = {
             pathParameters: {
-                familyId: 'e000cd90-441d-4765-afa1-23f7b6a50bb8',
-                email: 'mally2@gmail.com'
+                familyId: 'f6cf9f74-6f16-4dd4-99fc-2d70cc103264',
+                email: 'mally@gmail.com'
             },
             body: JSON.stringify({
-                status: 'ACCEPTED', // OR REJECTED
+                // status: 'ACCEPTED',
+                status: 'REJECTED',
             })
         }
     });

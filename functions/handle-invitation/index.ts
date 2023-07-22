@@ -3,7 +3,8 @@ import {
     PutItemCommand,
     GetItemCommandInput,
     GetItemCommand,
-    DeleteItemCommand
+    DeleteItemCommand,
+    UpdateItemCommand
 } from '@aws-sdk/client-dynamodb';
 import { APIGatewayProxyResult, APIGatewayProxyEventPathParameters } from 'aws-lambda';
 
