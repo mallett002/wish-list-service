@@ -10,18 +10,20 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     console.log('logging context...');
     console.log(JSON.stringify(context, null, 2));
 
+    const { familyId, email } = event.pathParameters;
+
     // PK: FAMILY#<familyId>
-    // SK: MEMBER#<memberId>#GIFT#<giftId>
-    const { familyId, memberId, description, link, title } = JSON.parse(event.body || '{}');
+    // SK: MEMBER#<email>#GIFT#<giftId>
+    const { description, link, title } = JSON.parse(event.body || '{}');
 // {
 //     "familyId": "family1",
-//     "memberId": "...",
+//     "email": "mallett002@gmail.com",
 //     "description": "hat",
 //     "link": "google.com",
 //     "title": "Hat"
 // }
 
-    if (!familyId || !memberId || !title) {
+    if (!familyId || !email || !title) {
 
         return {
             statusCode: 400,
@@ -41,7 +43,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                     S: `FAMILY#${familyId}`
                 },
                 SK: {
-                    S: `MEMBER#${memberId}GIFT#${giftId}`
+                    S: `MEMBER#${email}GIFT#${giftId}`
                 },
                 description: {
                     S: description || ""
@@ -53,7 +55,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                     S: title
                 },
                 purchased: {
-                    BOOL: false // todo: make an update gift handler to mark as purchased
+                    BOOL: false // todo: make an update gift handler to mark as purchased/edit the gift
                 }
             },
             ReturnConsumedCapacity: 'TOTAL',

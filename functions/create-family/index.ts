@@ -11,16 +11,13 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     const { familyName, familyImage, email: creatorEmail } = JSON.parse(event.body || '{}');
 
     // TODO: Add try catches to all the db calls in all the handlers
-    // Get member from auth context
-    const { memberId }: any = event.requestContext.authorizer;
-
     const getMemberInput: GetItemCommandInput = {
         "Key": {
             "PK": {
-                "S": `MEMBER#${memberId}`
+                "S": `MEMBER#${creatorEmail}`
             },
             "SK": {
-                "S": `EMAIL#${creatorEmail}`
+                "S": `PROFILE`
             }
         },
         "TableName": "wish-list-table"
@@ -30,8 +27,8 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
     const { Item } = await client.send(getMemberCommand);
 
     // if member, create family member and family
-    if (Item && Item.email && Item.email.S) {
-        const email = Item.email.S;
+    if (Item && Item.PK && Item.PK.S) {
+        const email = Item.PK.S.replace('MEMBER#', '');
         const alias = Item.alias.S;
         const familyId = randomUUID();
 
@@ -63,14 +60,14 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                                     "S": `FAMILY#${familyId}`
                                 },
                                 "SK": {
-                                    "S": `MEMBER#${memberId}`
+                                    "S": `MEMBER#${email}`
                                 },
                                 "alias": {
                                     "S": alias
                                 },
-                                "email": {
-                                    "S": email
-                                },
+                                // "email": {
+                                //     "S": email
+                                // },
                             }
                         }
                     }

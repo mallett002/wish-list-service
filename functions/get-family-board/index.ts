@@ -50,19 +50,18 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     && SK.S?.includes('MEMBER#')
     && !SK.S?.includes('BOARD')
     && !SK.S?.includes('#INVITATION')).map((member) => ({
-      memberId: member?.SK?.S.replace('MEMBER#', ''),
+      email: member?.SK?.S.replace('MEMBER#', ''),
       alias: member.alias.S,
-      email: member.email.S
     }));
 
   const gifts = response.Items
     .filter(({ SK }) => SK && SK.S && SK.S.includes('GIFT#'))
     .map((gift) => {
-      const [memberId, giftId] = gift.SK && gift.SK.S && gift.SK.S.split('MEMBER#')[1].split('GIFT#') || ['', ''];
+      const [email, giftId] = gift.SK && gift.SK.S && gift.SK.S.split('MEMBER#')[1].split('GIFT#') || ['', ''];
 
       return {
         purchased: gift.purchased.BOOL,
-        memberId,
+        email,
         giftId,
         link: gift.link.S,
         description: gift.description.S,
@@ -71,7 +70,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     });
 
   const membersWithGifts = members.map((member) => {
-    const giftsForMember = gifts.filter((gift) => gift.memberId === member.memberId);
+    const giftsForMember = gifts.filter((gift) => gift.email === member.email);
 
     return {
       ...member,

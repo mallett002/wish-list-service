@@ -7,14 +7,11 @@ const createFamilyMember = (familyId: string) => ({
         "S": chance.first()
       },
       "SK": {
-        "S": `MEMBER#${chance.guid()}`
+        "S": `MEMBER#${chance.email()}`
       },
       "PK": {
         "S": `FAMILY#${familyId}`
       },
-      "email": {
-        "S": chance.email()
-      }
 });
 
 const createInvitation = (familyId: string) => ({
@@ -22,19 +19,19 @@ const createInvitation = (familyId: string) => ({
         "S": 'PENDING'
       },
       "SK": {
-        "S": `MEMBER#${chance.guid()}#INVITATION`
+        "S": `MEMBER#${chance.email()}#INVITATION`
       },
       "PK": {
         "S": `FAMILY#${familyId}`
       },
 });
 
-const createGift = (familyId: string, memberId: string) => ({
+const createGift = (familyId: string, username: string) => ({
     "purchased": {
         "BOOL": chance.bool()
       },
       "SK": {
-        "S": `MEMBER#${memberId}GIFT#${chance.guid()}`
+        "S": `MEMBER#${username}GIFT#${chance.guid()}`
       },
       "link": {
         "S": chance.url()
@@ -83,11 +80,11 @@ export const buildQueryResult = () => {
         result.Items.push(member);
         result.Items.push(createInvitation(familyId))
 
-        const memberId = member.SK.S.replace('MEMBER#', '');
+        const username = member.SK.S.replace('MEMBER#', '');
 
         for (let i = 0; i < chance.d4(); i++) {
             // @ts-ignore
-            result.Items.push(createGift(familyId, memberId));
+            result.Items.push(createGift(familyId, username));
         }
     }
 

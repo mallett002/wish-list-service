@@ -1,30 +1,31 @@
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import { APIGatewayProxyResult, PostConfirmationTriggerEvent } from 'aws-lambda';
+import { PostConfirmationTriggerEvent } from 'aws-lambda';
 
 
-// For invitation:
-// Need ability to search for members by email to invite them to the family
-// Also, use email to find the member and create the familyMember off of them
-// Use GSI to query SK = email AND PK begin_with(MEMBER#)
 // Todo: make update member handler to add an alias. Prefer this in front end
 export const handler = async (event: PostConfirmationTriggerEvent): Promise<PostConfirmationTriggerEvent> => {
   const { sub, email } = event.request.userAttributes;
 
+  console.log(JSON.stringify({event}));
+  
   try {
     const client = new DynamoDBClient({ region: "us-east-1" });
     const input = {
       Item: {
         PK: {
-          S: `MEMBER#${sub}`
+          S: `MEMBER#${email}`
         },
         SK: {
-          S: `EMAIL#${email}`
+          S: `PROFILE`
         },
-        email: {
-          S: email || "" // todo: maybe remove since have it in the SK
-        },
+        // email: {
+        //   S: email || "" // todo: maybe remove since have it in the SK
+        // },
         alias: {
           S: ''
+        },
+        sub: {
+          S: sub
         }
       },
       ReturnConsumedCapacity: 'TOTAL',

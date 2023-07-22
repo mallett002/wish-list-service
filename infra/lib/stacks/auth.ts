@@ -66,7 +66,6 @@ export class Auth extends Construct {
                 callbackUrls: [callbackUrl],
                 flows: { authorizationCodeGrant: true },
                 scopes: [
-                    //  cognito.OAuthScope.resourceServer(userServer, fullAccessScope), 
                      cognito.OAuthScope.OPENID,
                      cognito.OAuthScope.PHONE,
                      cognito.OAuthScope.EMAIL,

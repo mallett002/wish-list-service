@@ -1,6 +1,7 @@
 FROM public.ecr.aws/lambda/nodejs:18 as builder
 WORKDIR /usr/app
 COPY package.json index.ts  ./
+RUN echo npm --version
 RUN npm install --fetch-timeout=600000
 RUN npm run build
 
