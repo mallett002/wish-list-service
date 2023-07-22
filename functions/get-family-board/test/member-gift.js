@@ -11,10 +11,10 @@ function createMemberInput() {
         PutRequest: {
             Item: {
                 PK: {
-                    S: `MEMBER#${chance.guid()}`
+                    S: `MEMBER#${email}`
                 },
                 SK: {
-                    S: `EMAIL#${email}`
+                    S: `PROFILE`
                 },
                 email: {
                     S: chance.email()

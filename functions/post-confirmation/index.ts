@@ -1,17 +1,19 @@
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import { APIGatewayProxyResult, PostConfirmationTriggerEvent } from 'aws-lambda';
+import { PostConfirmationTriggerEvent } from 'aws-lambda';
 
 
 // Todo: make update member handler to add an alias. Prefer this in front end
 export const handler = async (event: PostConfirmationTriggerEvent): Promise<PostConfirmationTriggerEvent> => {
   const { sub, email } = event.request.userAttributes;
 
+  console.log(JSON.stringify({event}));
+  
   try {
     const client = new DynamoDBClient({ region: "us-east-1" });
     const input = {
       Item: {
         PK: {
-          S: `EMAIL#${email}`
+          S: `MEMBER#${email}`
         },
         SK: {
           S: `PROFILE`
@@ -21,6 +23,9 @@ export const handler = async (event: PostConfirmationTriggerEvent): Promise<Post
         // },
         alias: {
           S: ''
+        },
+        sub: {
+          S: sub
         }
       },
       ReturnConsumedCapacity: 'TOTAL',

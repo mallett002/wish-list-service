@@ -31,8 +31,14 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const response = await client.send(command);
     console.log({ response });
 
-    const members = response.Items || [];
+    const dbMembers = response.Items || [];
+    const members = dbMembers.map((member) => ({
+      alias: member.alias.S,
+      email: member.PK.S.replace('MEMBER#', '')
+    }));
 
+    // Todo: make sure we return non DB items out of handlers, like this ^^
+      // ex: no PK and SK
     return {
       statusCode: 200,
       headers: {

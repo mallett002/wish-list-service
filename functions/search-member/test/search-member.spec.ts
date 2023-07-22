@@ -1,13 +1,13 @@
 import {handler} from '..';
 
-describe('get-families for member', () => {
+describe('search members by email', () => {
 
-    let expectedEvent: { pathParameters: { memberId: any; }; };
+    let expectedEvent: { queryStringParameters: { email: string; }; };
     
     beforeEach(() => {
         expectedEvent = {
-            pathParameters: {
-                memberId: '636c9015-35d3-4006-9567-5411786ea646'
+            queryStringParameters: {
+                email: 'mall'
             }
         }
     });
