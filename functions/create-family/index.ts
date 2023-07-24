@@ -65,9 +65,6 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                                 "alias": {
                                     "S": alias
                                 },
-                                // "email": {
-                                //     "S": email
-                                // },
                             }
                         }
                     }
