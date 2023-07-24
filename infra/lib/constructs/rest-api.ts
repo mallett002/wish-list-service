@@ -170,9 +170,6 @@ export class WishListRestApi extends Construct {
             authorizer: authorizer,
             authorizationType: apigateway.AuthorizationType.CUSTOM,
         });
-        invitation.addCorsPreflight({
-            allowOrigins: ['localhost']
-        });
         authLambda.grantInvoke(props.deleteInvitationLambda);
     }
 }
