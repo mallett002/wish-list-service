@@ -14,7 +14,7 @@ interface IHandleInvitationParams extends APIGatewayProxyEventPathParameters {
 }
 
 // PUT /families/{familyId}/invitations/{email}
-// Accepts/rejects invitation 
+// Accepts/rejects/sets back to pending an invitation 
 export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const client = new DynamoDBClient({ region: "us-east-1" });
     const { status } = JSON.parse(event.body);
