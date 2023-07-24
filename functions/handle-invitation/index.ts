@@ -20,7 +20,6 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const { status } = JSON.parse(event.body);
     const { familyId, email }: IHandleInvitationParams = event.pathParameters;
 
-    // current status has to be REJECTED for PENDING
     if (!status || (status !== 'ACCEPTED' && status !== 'REJECTED' && status !== 'PENDING')) {
         console.log('missing status in request body');
 
