@@ -23,6 +23,7 @@ export class WishListServiceStack extends cdk.Stack {
     const createInvitation = this.createLambdaHandler('create-invitation', props.wishListTable, 'readWrite');
     const searchMember = this.createLambdaHandler('search-member', props.wishListTable, 'read');
     const handleInvitation = this.createLambdaHandler('handle-invitation', props.wishListTable, 'readWrite');
+    const deleteInvitation = this.createLambdaHandler('delete-invitation', props.wishListTable, 'write');
 
     new WishListRestApi(this, 'WishListRestApi', {
       postGiftLambda: postGift.handler,
@@ -33,6 +34,7 @@ export class WishListServiceStack extends cdk.Stack {
       createInvitationLambda: createInvitation.handler,
       searchMemberLambda: searchMember.handler,
       handleInvitationLambda: handleInvitation.handler,
+      deleteInvitationLambda: deleteInvitation.handler,
       appClientId: auth.appClientId,
       userPoolId: auth.userPoolId
     });
