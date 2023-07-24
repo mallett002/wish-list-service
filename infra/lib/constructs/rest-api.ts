@@ -14,6 +14,7 @@ interface WishListRestApiProps {
     createInvitationLambda: lambda.Function,
     searchMemberLambda: lambda.Function,
     handleInvitationLambda: lambda.Function,
+    deleteInvitationLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -160,5 +161,18 @@ export class WishListRestApi extends Construct {
             allowOrigins: ['localhost']
         });
         authLambda.grantInvoke(props.handleInvitationLambda);
+
+        // Delete invitation: DELETE /families/{familyId}/invitations/{email}
+        const deleteInvitationIntegration = new apigateway.LambdaIntegration(props.deleteInvitationLambda, {
+            proxy: true
+        });
+        invitation.addMethod('DELETE', deleteInvitationIntegration, {
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+        });
+        invitation.addCorsPreflight({
+            allowOrigins: ['localhost']
+        });
+        authLambda.grantInvoke(props.deleteInvitationLambda);
     }
 }
