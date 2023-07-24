@@ -17,8 +17,9 @@ describe('handle-invitation', () => {
                 email: 'mally@gmail.com'
             },
             body: JSON.stringify({
-                // status: 'ACCEPTED',
-                status: 'REJECTED',
+                status: 'ACCEPTED',
+                // status: 'REJECTED',
+                // status: 'PENDING',
             })
         }
     });

@@ -20,7 +20,8 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const { status } = JSON.parse(event.body);
     const { familyId, email }: IHandleInvitationParams = event.pathParameters;
 
-    if (!status || status !== 'ACCEPTED' && status !== 'REJECTED') {
+    // current status has to be REJECTED for PENDING
+    if (!status || (status !== 'ACCEPTED' && status !== 'REJECTED' && status !== 'PENDING')) {
         console.log('missing status in request body');
 
         return {
@@ -65,12 +66,12 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             };
         }
 
-        // if status is ACCEPTED
-        //- create familyMember:
-        //   - FAMILY#<id>, MEMBER#<id> from the invitation (familyId from SK)
-        //   - delete invitation (FAMILY#<id>, MEMBER#<id>#INVITATION)
-
+        // if status is ACCEPTED: and create family member and delete invitation
+        // if status is REJECTED: set status on db invitation to REJECTED
         if (status === 'ACCEPTED') {
+
+            console.log('Setting PENDING invitation to ACCEPTED...');
+
             // Get the member
             const getMemberInput: GetItemCommandInput = {
                 Key: {
@@ -86,6 +87,34 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
 
             const getMemberCommand = new GetItemCommand(getMemberInput);
             const { Item: memberItem } = await client.send(getMemberCommand);
+
+            // Check that the familyMember doesn't already exist: 
+            // Shouldn't get here if it doesn't exist. Invitation should have been deleted.
+            // const getFamilyMemberInput: GetItemCommandInput = {
+            //     Key: {
+            //         PK: {
+            //             S: `FAMILY#${familyId}`
+            //         },
+            //         SK: {
+            //             S: `MEMBER#${email}`
+            //         },
+            //     },
+            //     TableName: "wish-list-table"
+            // };
+
+            // const getFamilyMemberCommand = new GetItemCommand(getFamilyMemberInput);
+            // const { Item: familyMemberItem } = await client.send(getFamilyMemberCommand);
+
+            // if (familyMemberItem) {
+            //     return {
+            //         statusCode: 409,
+            //         headers: {
+            //             "Access-Control-Allow-Origin": "*",
+            //             "Access-Control-Allow-Credentials": true
+            //         },
+            //         body: JSON.stringify({ message: `Conflict: Family member with email ${email} already exists in family ${familyId}` })
+            //     };
+            // }
 
             // Create the family member:
             const createFamilyMemberInput = {
@@ -123,9 +152,10 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             const deleteInviteResponse = await client.send(deleteInvitationCommand);
             console.log({ deleteInviteResponse });
 
-        } else { // status is REJECTED
-            // ELSE status is REJECTED (checking in if block above)
-            // set the status on the db item to rejected
+        } else if (status === 'REJECTED') {
+
+            console.log('Setting PENDING invitation to REJECTED...');
+
             const updateInviteInput = {
                 "ExpressionAttributeNames": {
                     "#ST": "status",
@@ -151,6 +181,48 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             const updateInviteResponse = await client.send(updateInviteCommand);
 
             console.log({ updateInviteResponse });
+
+        } else { // setting back to PENDING when was rejected
+
+            console.log('Setting REJECTED invitation back to PENDING...');
+            
+            // If it's not currently rejected, return bad request
+            if (getInvitationResponse.Item.status.S !== 'REJECTED') {
+                return {
+                    statusCode: 400,
+                    headers: {
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Credentials": true
+                    },
+                    body: JSON.stringify({ message: 'Bad Request: Status is currently not REJECTED' })
+                };
+            }
+
+            // set it back to pending:
+            const updateToPendingInviteInput = {
+                "ExpressionAttributeNames": {
+                    "#ST": "status",
+                },
+                "ExpressionAttributeValues": {
+                    ":t": {
+                        "S": "PENDING"
+                    },
+                },
+                "Key": {
+                    PK: {
+                        S: `FAMILY#${familyId}`
+                    },
+                    SK: {
+                        S: `MEMBER#${email}#INVITATION`
+                    }
+                },
+                "ReturnValues": "ALL_NEW",
+                "TableName": "wish-list-table",
+                "UpdateExpression": "SET #ST = :t"
+            };
+            const updateToPendingInviteCommand = new UpdateItemCommand(updateToPendingInviteInput);
+            const updateToPendingInviteResponse = await client.send(updateToPendingInviteCommand);
+            console.log({ updateToPendingInviteResponse });
         }
 
         return {
