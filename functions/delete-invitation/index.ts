@@ -7,7 +7,6 @@ interface IDeleteInvitationParams extends APIGatewayProxyEventPathParameters {
 }
 
 // DELETE /families/{familyId}/invitations/{email}
-// Accepts/rejects/sets back to pending an invitation 
 export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const client = new DynamoDBClient({ region: "us-east-1" });
     const { familyId, email }: IDeleteInvitationParams = event.pathParameters;
