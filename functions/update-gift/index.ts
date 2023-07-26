@@ -1,11 +1,4 @@
-import {
-    DynamoDBClient,
-    PutItemCommand,
-    GetItemCommandInput,
-    GetItemCommand,
-    DeleteItemCommand,
-    UpdateItemCommand
-} from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
 import { APIGatewayProxyResult, APIGatewayProxyEventPathParameters } from 'aws-lambda';
 
 interface IGiftParams extends APIGatewayProxyEventPathParameters {
@@ -23,8 +16,7 @@ interface IGiftPayload {
 export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const client = new DynamoDBClient({ region: "us-east-1" });
     const { familyId, email, giftId }: IGiftParams = event.pathParameters;
-    const payload = JSON.parse(event.body || '{}');
-    // const { description, link, title, purchased } = JSON.parse(event.body || '{}');
+    const payload: IGiftPayload = JSON.parse(event.body || '{}');
     const payloadKeys = Object.keys(payload);
 
     if (!payloadKeys.length) {
@@ -34,7 +26,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": true
             },
-            body: JSON.stringify({ message: 'Bad Request' })
+            body: JSON.stringify({ message: 'Bad Request: no gift fields provided' })
         };
     }
 
@@ -100,8 +92,6 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     console.log({ updateGiftResponse });
 
     const {Item: updatedGift} = updateGiftResponse;
-
-    // return the updated gift:
 
     return {
         statusCode: 200,

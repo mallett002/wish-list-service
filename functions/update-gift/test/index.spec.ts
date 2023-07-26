@@ -6,20 +6,21 @@ describe('update-gift', () => {
         pathParameters: { 
             familyId: string;
             email: string;
+            giftId: string;
          };
-        body: any
+        body: string
      };
     
     beforeEach(() => {
         expectedEvent = {
             pathParameters: {
                 familyId: 'f6cf9f74-6f16-4dd4-99fc-2d70cc103264',
-                email: 'mally@gmail.com'
+                email: 'mally@gmail.com',
+                giftId: '...'
             },
             body: JSON.stringify({
-                status: 'ACCEPTED',
-                // status: 'REJECTED',
-                // status: 'PENDING',
+                purchased: true,
+                description: 'This is a test gift'
             })
         }
     });
@@ -28,6 +29,6 @@ describe('update-gift', () => {
         // @ts-ignore
         const result = await handler(expectedEvent);
 
-        expect(result.statusCode).toBe(204);
+        expect(result.statusCode).toBe(200);
     }, 70000);
 });
