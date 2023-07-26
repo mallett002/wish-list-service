@@ -14,9 +14,9 @@ describe('update-gift', () => {
     beforeEach(() => {
         expectedEvent = {
             pathParameters: {
-                familyId: 'f6cf9f74-6f16-4dd4-99fc-2d70cc103264',
-                email: 'mally@gmail.com',
-                giftId: '...'
+                familyId: '678e0112-dd17-4c16-b2ea-49d46fb417b9',
+                email: 'mallett002@gmail.com',
+                giftId: 'aed19711-1b41-44de-9284-cc473526b684'
             },
             body: JSON.stringify({
                 purchased: true,

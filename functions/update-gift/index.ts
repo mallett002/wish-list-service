@@ -30,25 +30,29 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         };
     }
 
+    // this isn't working...
     const updateGiftInput = payloadKeys.reduce((accum, key) => {
         const expAtVal = `:${key.substr(0, 1)}`;
         const expAtName = `#${key.substr(0, 2).toUpperCase()}`;
         const value = payload[key];
 
-        return {
+        const it = {
             ...accum,
             ExpressionAttributeNames: {
                 ...accum.ExpressionAttributeNames,
                 [expAtName]: key
             },
             ExpressionAttributeValues: {
-                ...ExpressionAttributeValues,
+                ...accum.ExpressionAttributeValues,
                 [expAtVal]: {
-                    [typeof value === 'boolean' ? 'BOOL' : S]: value
+                    [typeof value === 'boolean' ? 'BOOL' : 'S']: value
                 }
             },
-            UpdateExpression: accum.UpdateExpression += `${accum.UpdateExpression && ','} SET ${expAtName} = ${expAtVal}`
-        }
+            // Todo: fix this. not right
+            UpdateExpression: accum.UpdateExpression += `${accum.UpdateExpression !== 'SET ' ? ',' : ''} ${expAtName} = ${expAtVal}`
+        };
+
+        return it;
 
     }, {
         ExpressionAttributeNames: {},
@@ -63,8 +67,8 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         },
         ReturnValues: 'ALL_NEW',
         TableName: 'wish-list-table',
-        UpdateExpression: ''
-    })
+        UpdateExpression: 'SET '
+    });
 
     // const updateToPendingInviteInput = {
     //     "ExpressionAttributeNames": {
@@ -87,18 +91,32 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     //     "TableName": "wish-list-table",
     //     "UpdateExpression": "SET #ST = :t"
     // };
-    const updateGiftCommand = new UpdateItemCommand(updateGiftInput);
-    const updateGiftResponse = await client.send(updateGiftCommand);
-    console.log({ updateGiftResponse });
 
-    const {Item: updatedGift} = updateGiftResponse;
+    try {
+        const updateGiftCommand = new UpdateItemCommand(updateGiftInput);
+        const updateGiftResponse = await client.send(updateGiftCommand);
+        console.log({ updateGiftResponse });
+    
+        const {Item: updatedGift} = updateGiftResponse;
+    
+        return {
+            statusCode: 200,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": true
+            },
+            body: JSON.stringify({ gift: updatedGift })
+        };
+    } catch (error) {
+        console.log({error});
 
-    return {
-        statusCode: 200,
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Credentials": true
-        },
-        body: JSON.stringify({ gift: updatedGift })
-    };
+        return {
+            statusCode: 500,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": true
+            },
+            body: JSON.stringify({ message: 'Something went wrong.' })
+        };
+    }
 };
