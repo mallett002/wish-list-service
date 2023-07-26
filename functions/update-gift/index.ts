@@ -46,7 +46,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
                 [expAtVal]: {
                     [typeof value === 'boolean' ? 'BOOL' : S]: value
                 }
-            }
+            },
             UpdateExpression: accum.UpdateExpression += `${accum.UpdateExpression && ','} SET ${expAtName} = ${expAtVal}`
         }
 
