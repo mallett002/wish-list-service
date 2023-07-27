@@ -16,7 +16,7 @@ describe('update-gift', () => {
             pathParameters: {
                 familyId: '194dee74-6f21-4765-a4b2-b4083ecb4b0d',
                 email: 'mallett002@gmail.com',
-                giftId: '7b5d92d5-1a20-45a9-becf-76af2aec4816'
+                giftId: '4ffeb86f-0328-4352-be79-625649f708c7'
             },
             body: JSON.stringify({
                 purchased: false,

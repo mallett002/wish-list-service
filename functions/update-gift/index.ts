@@ -84,10 +84,10 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         console.log({ updateGiftResponse });
     
         const {Attributes} = updateGiftResponse;
-        const [email, giftId] = Attributes.SK.S.split('MEMBER#')[1].split('GIFT#')
+        const [email, giftId] = Attributes?.SK?.S?.split('MEMBER#')[1].split('GIFT#') || ['', '']
 
         const gift: IGift = {
-            familyId: Attributes.PK.S.replace('FAMILY#', ''),
+            familyId: Attributes?.PK?.S?.replace('FAMILY#', '') || '',
             email,
             giftId,
             description: Attributes?.description?.S || '',
