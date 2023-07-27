@@ -30,13 +30,12 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         };
     }
 
-    // this isn't working...
     const updateGiftInput = payloadKeys.reduce((accum, key) => {
         const expAtVal = `:${key.substr(0, 1)}`;
         const expAtName = `#${key.substr(0, 2).toUpperCase()}`;
         const value = payload[key];
 
-        const it = {
+        return {
             ...accum,
             ExpressionAttributeNames: {
                 ...accum.ExpressionAttributeNames,
@@ -48,11 +47,10 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
                     [typeof value === 'boolean' ? 'BOOL' : 'S']: value
                 }
             },
-            // Todo: fix this. not right
-            UpdateExpression: accum.UpdateExpression += `${accum.UpdateExpression !== 'SET ' ? ',' : ''} ${expAtName} = ${expAtVal}`
+            UpdateExpression: !accum.UpdateExpression 
+                ? `SET ${expAtName} = ${expAtVal}` 
+                : accum.UpdateExpression + `, ${expAtName} = ${expAtVal}`
         };
-
-        return it;
 
     }, {
         ExpressionAttributeNames: {},
@@ -67,7 +65,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         },
         ReturnValues: 'ALL_NEW',
         TableName: 'wish-list-table',
-        UpdateExpression: 'SET '
+        UpdateExpression: ''
     });
 
     // const updateToPendingInviteInput = {
@@ -97,7 +95,19 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         const updateGiftResponse = await client.send(updateGiftCommand);
         console.log({ updateGiftResponse });
     
-        const {Item: updatedGift} = updateGiftResponse;
+        const {Attributes} = updateGiftResponse;
+        const [email, giftId] = Attributes.SK.S.split('MEMBER#')[1].split('GIFT#')
+
+        // Todo: make this type
+        const gift: IGiftResponse = {
+            familyId: Attributes.PK.S.replace('FAMILY#', ''),
+            email,
+            giftId,
+            description: Attributes?.description?.S || '',
+            link: Attributes?.link?.S || '',
+            title: Attributes?.title?.S || '',
+            purchased: Attributes?.purchased?.BOOL || false,
+        };
     
         return {
             statusCode: 200,
@@ -105,7 +115,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": true
             },
-            body: JSON.stringify({ gift: updatedGift })
+            body: JSON.stringify({ gift })
         };
     } catch (error) {
         console.log({error});
