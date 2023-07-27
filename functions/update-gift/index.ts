@@ -11,6 +11,16 @@ interface IGiftPayload {
     title?: string
     purchased?: boolean
 }
+interface IGift {
+    familyId: string
+    email: string
+    giftId: string
+    description: string
+    link: string
+    title: string
+    purchased: boolean
+    favorite: boolean
+}
 
 // PUT /families/{id}/members/{email}/gifts/{giftId}
 export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
@@ -68,28 +78,6 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         UpdateExpression: ''
     });
 
-    // const updateToPendingInviteInput = {
-    //     "ExpressionAttributeNames": {
-    //         "#ST": "status",
-    //     },
-    //     "ExpressionAttributeValues": {
-    //         ":t": {
-    //             "S": "PENDING"
-    //         },
-    //     },
-    //     "Key": {
-    //         PK: {
-    //             S: `FAMILY#${familyId}`
-    //         },
-    //         SK: {
-    //             S: `MEMBER#${email}#INVITATION`
-    //         }
-    //     },
-    //     "ReturnValues": "ALL_NEW",
-    //     "TableName": "wish-list-table",
-    //     "UpdateExpression": "SET #ST = :t"
-    // };
-
     try {
         const updateGiftCommand = new UpdateItemCommand(updateGiftInput);
         const updateGiftResponse = await client.send(updateGiftCommand);
@@ -98,8 +86,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         const {Attributes} = updateGiftResponse;
         const [email, giftId] = Attributes.SK.S.split('MEMBER#')[1].split('GIFT#')
 
-        // Todo: make this type
-        const gift: IGiftResponse = {
+        const gift: IGift = {
             familyId: Attributes.PK.S.replace('FAMILY#', ''),
             email,
             giftId,
@@ -107,6 +94,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             link: Attributes?.link?.S || '',
             title: Attributes?.title?.S || '',
             purchased: Attributes?.purchased?.BOOL || false,
+            favorite: Attributes?.favorite?.BOOL || false,
         };
     
         return {

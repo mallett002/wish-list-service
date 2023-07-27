@@ -1,6 +1,17 @@
 import { DynamoDBClient, PutItemCommand } from '@aws-sdk/client-dynamodb';
-import {randomUUID} from 'node:crypto';
+import { randomUUID } from 'node:crypto';
 import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
+
+interface IGift {
+    familyId: string
+    email: string
+    giftId: string
+    description: string
+    link: string
+    title: string
+    purchased: boolean
+    favorite: boolean
+}
 
 export const handler = async (event: APIGatewayProxyEvent, context?: any): Promise<APIGatewayProxyResult> => {
     const client = new DynamoDBClient({ region: "us-east-1" });
@@ -14,14 +25,14 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
 
     // PK: FAMILY#<familyId>
     // SK: MEMBER#<email>#GIFT#<giftId>
-    const { description, link, title } = JSON.parse(event.body || '{}');
-// {
-//     "familyId": "family1",
-//     "email": "mallett002@gmail.com",
-//     "description": "hat",
-//     "link": "google.com",
-//     "title": "Hat"
-// }
+    const { description, link, title, favorite } = JSON.parse(event.body || '{}');
+    // {
+    //     "familyId": "family1",
+    //     "email": "mallett002@gmail.com",
+    //     "description": "hat",
+    //     "link": "google.com",
+    //     "title": "Hat"
+    // }
 
     if (!familyId || !email || !title) {
 
@@ -55,16 +66,29 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                     S: title
                 },
                 purchased: {
-                    BOOL: false // todo: make an update gift handler to mark as purchased/edit the gift
+                    BOOL: false
+                },
+                favorite: {
+                    BOOL: favorite || false
                 }
             },
-            ReturnConsumedCapacity: 'TOTAL',
             TableName: 'wish-list-table'
         };
 
         const command = new PutItemCommand(input);
+        const createGiftResponse = await client.send(command);
+        console.log({ createGiftResponse });
 
-        await client.send(command);
+        const gift: IGift = {
+            familyId,
+            email,
+            giftId,
+            description: description || '',
+            link: link || '',
+            title,
+            purchased: false,
+            favorite: favorite || false,
+        };
 
         return {
             statusCode: 201,
@@ -72,7 +96,7 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": true
             },
-            body: JSON.stringify({ created: `FAMILY#${familyId}` })
+            body: JSON.stringify({ gift })
         };
     } catch (error: any) {
         return {

@@ -19,9 +19,10 @@ describe('update-gift', () => {
                 giftId: '7b5d92d5-1a20-45a9-becf-76af2aec4816'
             },
             body: JSON.stringify({
-                purchased: true,
-                description: 'This is a test gift',
-                link: 'somewhere2.com'
+                purchased: false,
+                description: 'This is a test',
+                link: 'somewhere3.com',
+                favorite: true
             })
         }
     });
