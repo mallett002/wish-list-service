@@ -24,7 +24,8 @@ export class WishListServiceStack extends cdk.Stack {
     const searchMember = this.createLambdaHandler('search-member', props.wishListTable, 'read');
     const handleInvitation = this.createLambdaHandler('handle-invitation', props.wishListTable, 'readWrite');
     const deleteInvitation = this.createLambdaHandler('delete-invitation', props.wishListTable, 'write');
-    const updateGift = this.createLambdaHandler('update-gift', props.wishListTable, 'readWrite'); // todo: need to be read/write?
+    const updateGift = this.createLambdaHandler('update-gift', props.wishListTable, 'write');
+    const deleteGift = this.createLambdaHandler('delete-gift', props.wishListTable, 'write');
 
     new WishListRestApi(this, 'WishListRestApi', {
       postGiftLambda: postGift.handler,
@@ -37,6 +38,7 @@ export class WishListServiceStack extends cdk.Stack {
       handleInvitationLambda: handleInvitation.handler,
       deleteInvitationLambda: deleteInvitation.handler,
       updateGiftLambda: updateGift.handler,
+      deleteGiftLambda: deleteGift.handler,
       appClientId: auth.appClientId,
       userPoolId: auth.userPoolId
     });

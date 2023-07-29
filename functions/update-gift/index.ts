@@ -4,6 +4,7 @@ import { APIGatewayProxyResult, APIGatewayProxyEventPathParameters } from 'aws-l
 interface IGiftParams extends APIGatewayProxyEventPathParameters {
     familyId: string
     email: string
+    giftId: string
 }
 interface IGiftPayload {
     description?: string
