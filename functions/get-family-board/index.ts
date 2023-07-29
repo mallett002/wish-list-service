@@ -4,6 +4,16 @@ import { APIGatewayProxyResult, APIGatewayProxyEvent, APIGatewayProxyEventPathPa
 interface IGetFamilyBoardParams extends APIGatewayProxyEventPathParameters {
   familyId: string
 }
+interface IGift {
+  familyId: string
+  email: string
+  giftId: string
+  description: string
+  link: string
+  title: string
+  purchased: boolean
+  favorite: boolean
+}
 
 // GET /families/{id}/board
 export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
@@ -54,18 +64,20 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
       alias: member.alias.S,
     }));
 
-  const gifts = response.Items
+  const gifts: IGift[] = response.Items
     .filter(({ SK }) => SK && SK.S && SK.S.includes('GIFT#'))
     .map((gift) => {
       const [email, giftId] = gift.SK && gift.SK.S && gift.SK.S.split('MEMBER#')[1].split('GIFT#') || ['', ''];
 
       return {
-        purchased: gift.purchased.BOOL,
+        familyId,
         email,
         giftId,
-        link: gift.link.S,
-        description: gift.description.S,
-        title: gift.title.S
+        title: gift?.title?.S || '',
+        description: gift?.description?.S || '',
+        link: gift?.link?.S || '',
+        purchased: gift?.purchased?.BOOL || false,
+        favorite: gift?.favorite?.BOOL || false
       };
     });
 

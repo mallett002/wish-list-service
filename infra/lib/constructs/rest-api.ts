@@ -15,6 +15,7 @@ interface WishListRestApiProps {
     searchMemberLambda: lambda.Function,
     handleInvitationLambda: lambda.Function,
     deleteInvitationLambda: lambda.Function,
+    updateGiftLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -81,17 +82,16 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.postGiftLambda);
 
-        // Todo: make this a PUT to update the gift
-        // Get gift: GET /families/{id}/members/{email}/gifts/{giftId}
-        // const getGiftIntegration = new apigateway.LambdaIntegration(props.getGiftLambda, { proxy: true });
-        // gift.addMethod('GET', getGiftIntegration, {
-        //     authorizer: authorizer,
-        //     authorizationType: apigateway.AuthorizationType.CUSTOM,
-        // });
-        // gift.addCorsPreflight({
-        //     allowOrigins: ['localhost']
-        // });
-        // authLambda.grantInvoke(props.getGiftLambda);
+        // Get gift: PUT /families/{id}/members/{email}/gifts/{giftId}
+        const updateGiftIntegration = new apigateway.LambdaIntegration(props.updateGiftLambda, { proxy: true });
+        gift.addMethod('PUT', updateGiftIntegration, {
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+        });
+        gift.addCorsPreflight({
+            allowOrigins: ['localhost']
+        });
+        authLambda.grantInvoke(props.updateGiftLambda);
 
         // Get family board: GET /families/{id}/board
         const getFamilyBoardIntegration = new apigateway.LambdaIntegration(props.getFamilyBoardLambda, { proxy: true });
