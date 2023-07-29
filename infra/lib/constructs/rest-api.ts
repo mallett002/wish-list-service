@@ -16,6 +16,7 @@ interface WishListRestApiProps {
     handleInvitationLambda: lambda.Function,
     deleteInvitationLambda: lambda.Function,
     updateGiftLambda: lambda.Function,
+    deleteGiftLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -148,7 +149,6 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.searchMemberLambda);
 
-
         // Update invitation: PUT /families/{familyId}/invitations/{email}
         const handleInvitationIntegration = new apigateway.LambdaIntegration(props.handleInvitationLambda, {
             proxy: true
@@ -171,5 +171,13 @@ export class WishListRestApi extends Construct {
             authorizationType: apigateway.AuthorizationType.CUSTOM,
         });
         authLambda.grantInvoke(props.deleteInvitationLambda);
+
+        // Delete gift: DELETE /families/{id}/members/{email}/gifts/{giftId}
+        const deleteGiftIntegration = new apigateway.LambdaIntegration(props.deleteGiftLambda, { proxy: true });
+        gift.addMethod('DELETE', deleteGiftIntegration, {
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+        });
+        authLambda.grantInvoke(props.deleteGiftLambda);
     }
 }
