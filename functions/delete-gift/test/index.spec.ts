@@ -13,9 +13,9 @@ describe('delete-gift', () => {
     beforeEach(() => {
         expectedEvent = {
             pathParameters: {
-                familyId: '194dee74-6f21-4765-a4b2-b4083ecb4b0d',
+                familyId: '69b6e448-c210-4dd3-82cc-aba728bece2b',
                 email: 'mallett002@gmail.com',
-                giftId: '4ffeb86f-0328-4352-be79-625649f708c7'
+                giftId: '109d84c7-0333-4301-b171-b69110b3db33'
             }
         }
     });

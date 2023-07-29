@@ -22,7 +22,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             },
         },
         TableName: "wish-list-table"
-    }
+    };
 
     try {
         const deleteGiftCommand = new DeleteItemCommand(deleteGiftInput);
@@ -35,7 +35,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": true
             },
-            body: JSON.stringify({ gift })
+            body: JSON.stringify({ message: 'No content' })
         };
     } catch (error) {
         console.log({error});
