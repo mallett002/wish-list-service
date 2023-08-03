@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 import { WishListHandler } from '../constructs/functions/handler';
 import { WishListRestApi } from '../constructs/rest-api';
 import { Auth } from './auth';
@@ -26,6 +27,8 @@ export class WishListServiceStack extends cdk.Stack {
     const deleteInvitation = this.createLambdaHandler('delete-invitation', props.wishListTable, 'write');
     const updateGift = this.createLambdaHandler('update-gift', props.wishListTable, 'write');
     const deleteGift = this.createLambdaHandler('delete-gift', props.wishListTable, 'write');
+    // Attempting to create an endpoint for adding an image:
+    const imageUpload = this.createLambdaHandler('image-upload', props.wishListTable, 'write');
 
     new WishListRestApi(this, 'WishListRestApi', {
       postGiftLambda: postGift.handler,
@@ -39,9 +42,21 @@ export class WishListServiceStack extends cdk.Stack {
       deleteInvitationLambda: deleteInvitation.handler,
       updateGiftLambda: updateGift.handler,
       deleteGiftLambda: deleteGift.handler,
+      imageUploadLambda: imageUpload.handler,
       appClientId: auth.appClientId,
       userPoolId: auth.userPoolId
     });
+
+    const familyImageBucket = new s3.Bucket(scope, 'FamilyImageBucket', {
+      bucketName: 'wish-list-family-image',
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
+      versioned: true,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+    });
+
+    familyImageBucket.grantReadWrite(imageUpload.handler);
   }
 
   private createLambdaHandler(

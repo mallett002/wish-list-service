@@ -17,6 +17,7 @@ interface WishListRestApiProps {
     deleteInvitationLambda: lambda.Function,
     updateGiftLambda: lambda.Function,
     deleteGiftLambda: lambda.Function,
+    imageUploadLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -33,7 +34,9 @@ export class WishListRestApi extends Construct {
         super(scope, id);
 
         const api = new apigateway.RestApi(this, 'wish-list-api', {
-            endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] }
+            endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] },
+            // binaryMediaTypes: ['image/png', 'image/jpeg']
+            binaryMediaTypes: ['application/octet-stream']
         });
 
         const authLambda = new lambda.DockerImageFunction(this, 'authorizer-lambda', {
@@ -63,6 +66,7 @@ export class WishListRestApi extends Construct {
         const gifts = familyMember.addResource('gifts'); // /families/{id}/members/{email}/gifts
         const gift = gifts.addResource('{giftId}'); // /families/{id}/members/{email}/gifts/{giftId}
         const invitation = invitations.addResource('{email}'); // /families/{familyId}/invitations/{email}
+        const familyImages = families.addResource('images'); // /families/{familyId}/images
 
         // Create family: POST /families
         const createFamilyIntegration = new apigateway.LambdaIntegration(props.createFamilyLambda, { proxy: true, });
@@ -179,5 +183,23 @@ export class WishListRestApi extends Construct {
             authorizationType: apigateway.AuthorizationType.CUSTOM,
         });
         authLambda.grantInvoke(props.deleteGiftLambda);
+
+        // Upload image: POST /families/{id}/images
+        const imageUploadIntegration = new apigateway.LambdaIntegration(props.imageUploadLambda, { proxy: true });
+        const imageModel: apigateway.Model = api.addModel('ImageModel', {
+            contentType: 'application/octet-stream',
+            schema: {}
+        });
+
+        familyImages.addMethod('POST', imageUploadIntegration, {
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+            requestModels: { 'application/octet-stream': imageModel }
+        });
+        familyImages.addCorsPreflight({
+            allowOrigins: ['localhost']
+        });
+        authLambda.grantInvoke(props.imageUploadLambda);
+
     }
 }
