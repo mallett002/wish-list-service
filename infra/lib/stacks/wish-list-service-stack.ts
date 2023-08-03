@@ -47,7 +47,7 @@ export class WishListServiceStack extends cdk.Stack {
       userPoolId: auth.userPoolId
     });
 
-    const familyImageBucket = new s3.Bucket(scope, 'FamilyImageBucket', {
+    const familyImageBucket = new s3.Bucket(this, 'FamilyImageBucket', {
       bucketName: 'wish-list-family-image',
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
