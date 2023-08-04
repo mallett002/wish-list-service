@@ -1,12 +1,9 @@
 import { DynamoDBClient, PutItemCommand, GetItemCommandInput, GetItemCommand } from '@aws-sdk/client-dynamodb';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { APIGatewayProxyResult, APIGatewayProxyEventPathParameters } from 'aws-lambda';
+import { APIGatewayProxyResult } from 'aws-lambda';
 // @ts-ignore
 import multipart from 'aws-lambda-multipart-parser';
-
-// interface IUploadImageParams extends APIGatewayProxyEventPathParameters {
-//     familyId: string
-// }
+import { parse } from 'aws-multipart-parser';
 
 /*
 Clients have to provide an Accept header as part of their request.
@@ -22,23 +19,28 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const { familyId } = event.pathParameters;
 
     // Is this binary? is this base64 encoded?
-    console.log({ body: event.body });
+    console.log({ event });
     console.log({ headers: event.headers });
 
     try {
-        const form = await multipart.parse(event);
+        // const form = await multipart.parse(event, true);
+        const form = parse(event, event.isBase64Encoded);
         console.log({ form });
 
-        const key = `${familyId}_${form.image.filename}`
+        const key = `${familyId}_${form.file.filename}`
 
+        // I think I'm calling s3 incorrectly or something
         const input = {
             Bucket: 'wish-list-family-image',
             Key: key,
-            Body: form.image.content,
-            ContentType: form.image.contentType,
+            Body: form.file.content,
+            // Body: Buffer.from(form.file.content as string, 'binary'),
+            ContentType: form.file.contentType,
         };
 
         const command = new PutObjectCommand(input);
+        console.log({ command });
+
         const putS3Response = await client.send(command);
         console.log({ putS3Response });
 
@@ -53,6 +55,8 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             body: JSON.stringify({ data: putS3Response })
         };
     } catch (error) {
+        console.log(JSON.stringify({ error }));
+
         return {
             statusCode: 500,
             headers: {

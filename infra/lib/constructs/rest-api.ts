@@ -188,7 +188,7 @@ export class WishListRestApi extends Construct {
         // Upload image: POST /families/{familyId}/image
         const imageUploadIntegration = new apigateway.LambdaIntegration(props.imageUploadLambda, {
             proxy: true,
-            passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
+            // passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
             // integrationResponses: [{
             //     statusCode: '201',
             //     responseParameters: {
@@ -201,11 +201,13 @@ export class WishListRestApi extends Construct {
         //     schema: {}
         // });
 
+        // Body mapping template here: https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
         familyImage.addMethod('POST', imageUploadIntegration, {
             authorizer: authorizer,
             authorizationType: apigateway.AuthorizationType.CUSTOM,
             // requestParameters: {
-            //     'method.request.header.Content-Type': true
+            //     'method.request.header.Content-Type': true,
+            //     'method.request.header.Accept': true,
             // }
         });
         familyImage.addCorsPreflight({
