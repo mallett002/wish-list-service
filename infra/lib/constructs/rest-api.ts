@@ -36,7 +36,8 @@ export class WishListRestApi extends Construct {
         const api = new apigateway.RestApi(this, 'wish-list-api', {
             endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] },
             // binaryMediaTypes: ['image/png', 'image/jpeg']
-            binaryMediaTypes: ['application/octet-stream']
+            binaryMediaTypes: ['multipart/form-data']
+            // binaryMediaTypes: ['*/*']
         });
 
         const authLambda = new lambda.DockerImageFunction(this, 'authorizer-lambda', {
@@ -66,7 +67,7 @@ export class WishListRestApi extends Construct {
         const gifts = familyMember.addResource('gifts'); // /families/{id}/members/{email}/gifts
         const gift = gifts.addResource('{giftId}'); // /families/{id}/members/{email}/gifts/{giftId}
         const invitation = invitations.addResource('{email}'); // /families/{familyId}/invitations/{email}
-        const familyImages = families.addResource('images'); // /families/{familyId}/images
+        const familyImage = family.addResource('image'); // /families/{familyId}/image
 
         // Create family: POST /families
         const createFamilyIntegration = new apigateway.LambdaIntegration(props.createFamilyLambda, { proxy: true, });
@@ -134,13 +135,13 @@ export class WishListRestApi extends Construct {
         authLambda.grantInvoke(props.createInvitationLambda);
 
         // Search member: GET /members?email=<email>
-        const searchMemberIntegration = new apigateway.LambdaIntegration(props.searchMemberLambda, { 
+        const searchMemberIntegration = new apigateway.LambdaIntegration(props.searchMemberLambda, {
             proxy: true,
             requestParameters: {
                 "integration.request.querystring.email":
-                "method.request.querystring.email", 
+                    "method.request.querystring.email",
             }
-         });
+        });
         rootMembers.addMethod('GET', searchMemberIntegration, {
             authorizer: authorizer,
             authorizationType: apigateway.AuthorizationType.CUSTOM,
@@ -184,19 +185,30 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.deleteGiftLambda);
 
-        // Upload image: POST /families/{id}/images
-        const imageUploadIntegration = new apigateway.LambdaIntegration(props.imageUploadLambda, { proxy: true });
-        const imageModel: apigateway.Model = api.addModel('ImageModel', {
-            contentType: 'application/octet-stream',
-            schema: {}
+        // Upload image: POST /families/{familyId}/image
+        const imageUploadIntegration = new apigateway.LambdaIntegration(props.imageUploadLambda, {
+            proxy: true,
+            passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
+            // integrationResponses: [{
+            //     statusCode: '201',
+            //     responseParameters: {
+            //       'method.response.header.Content-Type': "'multipart/form-data'",
+            //     },
+            //   }],
         });
+        // const imageModel: apigateway.Model = api.addModel('ImageModel', {
+        //     contentType: 'multipart/form-data',
+        //     schema: {}
+        // });
 
-        familyImages.addMethod('POST', imageUploadIntegration, {
+        familyImage.addMethod('POST', imageUploadIntegration, {
             authorizer: authorizer,
             authorizationType: apigateway.AuthorizationType.CUSTOM,
-            requestModels: { 'application/octet-stream': imageModel }
+            // requestParameters: {
+            //     'method.request.header.Content-Type': true
+            // }
         });
-        familyImages.addCorsPreflight({
+        familyImage.addCorsPreflight({
             allowOrigins: ['localhost']
         });
         authLambda.grantInvoke(props.imageUploadLambda);
