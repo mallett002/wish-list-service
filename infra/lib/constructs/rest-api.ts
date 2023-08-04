@@ -35,9 +35,7 @@ export class WishListRestApi extends Construct {
 
         const api = new apigateway.RestApi(this, 'wish-list-api', {
             endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] },
-            // binaryMediaTypes: ['image/png', 'image/jpeg']
             binaryMediaTypes: ['multipart/form-data']
-            // binaryMediaTypes: ['*/*']
         });
 
         const authLambda = new lambda.DockerImageFunction(this, 'authorizer-lambda', {
@@ -196,10 +194,6 @@ export class WishListRestApi extends Construct {
             //     },
             //   }],
         });
-        // const imageModel: apigateway.Model = api.addModel('ImageModel', {
-        //     contentType: 'multipart/form-data',
-        //     schema: {}
-        // });
 
         // Body mapping template here: https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
         familyImage.addMethod('POST', imageUploadIntegration, {
