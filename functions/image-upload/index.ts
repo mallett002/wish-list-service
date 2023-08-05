@@ -16,28 +16,27 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const { familyId } = event.pathParameters;
 
     try {
-        const form = parse(event, event.isBase64Encoded);
+        const { file: { content, contentType } } = parse(event, event.isBase64Encoded);
         const input = {
             Bucket: 'wish-list-family-image',
             Key: familyId,
-            Body: form.file.content,
-            ContentType: form.file.contentType,
+            Body: content,
+            ContentType: contentType,
         };
 
         const command = new PutObjectCommand(input);
         const putS3Response = await s3Client.send(command);
         console.log({ putS3Response });
 
-        // Now make this return the image as multipart/form-data
         return {
             statusCode: 201,
             headers: {
-                // "Content-Type": "multipart/form-data",
+                "Content-Type": 'application/octet-stream',
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": true
             },
-            // isBase64Encoded: true, // this has to be encoded...
-            body: JSON.stringify({ data: putS3Response })
+            isBase64Encoded: true,
+            body: Buffer.from(content, 'binary').toString('base64')
         };
     } catch (error) {
         console.log(JSON.stringify({ error }));
@@ -45,11 +44,10 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
         return {
             statusCode: 500,
             headers: {
-                // "Content-Type": "multipart/form-data",
+                "Content-Type": 'application/json',
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": true
             },
-            // isBase64Encoded: true, // this has to be encoded...
             body: JSON.stringify({ message: 'Something went wrong uploading image' })
         };
     }

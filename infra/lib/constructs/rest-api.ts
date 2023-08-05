@@ -35,7 +35,8 @@ export class WishListRestApi extends Construct {
 
         const api = new apigateway.RestApi(this, 'wish-list-api', {
             endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] },
-            binaryMediaTypes: ['multipart/form-data']
+            // binaryMediaTypes: ['multipart/form-data']
+            binaryMediaTypes: ['*/*']
         });
 
         const authLambda = new lambda.DockerImageFunction(this, 'authorizer-lambda', {
@@ -186,13 +187,14 @@ export class WishListRestApi extends Construct {
         // Upload image: POST /families/{familyId}/image
         const imageUploadIntegration = new apigateway.LambdaIntegration(props.imageUploadLambda, {
             proxy: true,
-            // passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
-            // integrationResponses: [{
-            //     statusCode: '201',
-            //     responseParameters: {
-            //       'method.response.header.Content-Type': "'multipart/form-data'",
-            //     },
-            //   }],
+            passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
+            contentHandling: apigateway.ContentHandling.CONVERT_TO_BINARY,
+            integrationResponses: [{
+                statusCode: '201',
+                responseParameters: {
+                  'method.response.header.Content-Type': "'application/octet-stream'",
+                },
+              }],
         });
 
         // Body mapping template here: https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
@@ -202,7 +204,13 @@ export class WishListRestApi extends Construct {
             // requestParameters: {
             //     'method.request.header.Content-Type': true,
             //     'method.request.header.Accept': true,
-            // }
+            // },
+            methodResponses: [{
+                statusCode: '201',
+                responseParameters: {
+                  'method.response.header.Content-Type': true,
+                },
+            }]
         });
         familyImage.addCorsPreflight({
             allowOrigins: ['localhost']
