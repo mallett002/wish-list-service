@@ -27,8 +27,7 @@ export class WishListServiceStack extends cdk.Stack {
     const deleteInvitation = this.createLambdaHandler('delete-invitation', props.wishListTable, 'write');
     const updateGift = this.createLambdaHandler('update-gift', props.wishListTable, 'write');
     const deleteGift = this.createLambdaHandler('delete-gift', props.wishListTable, 'write');
-    // Attempting to create an endpoint for adding an image:
-    const imageUpload = this.createLambdaHandler('image-upload', props.wishListTable, 'write');
+    const imageUrlGeneratort = this.createLambdaHandler('image-url-generator', props.wishListTable, 'readWrite'); // todo: figure dynamo access
 
     new WishListRestApi(this, 'WishListRestApi', {
       postGiftLambda: postGift.handler,
@@ -42,7 +41,7 @@ export class WishListServiceStack extends cdk.Stack {
       deleteInvitationLambda: deleteInvitation.handler,
       updateGiftLambda: updateGift.handler,
       deleteGiftLambda: deleteGift.handler,
-      imageUploadLambda: imageUpload.handler,
+      imageUrlGeneratortLambda: imageUrlGeneratort.handler,
       appClientId: auth.appClientId,
       userPoolId: auth.userPoolId
     });
@@ -56,7 +55,7 @@ export class WishListServiceStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
-    familyImageBucket.grantReadWrite(imageUpload.handler);
+    // familyImageBucket.grantReadWrite(imageUpload.handler);
   }
 
   private createLambdaHandler(

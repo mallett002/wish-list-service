@@ -11,7 +11,7 @@ describe('image-url-generator', () => {
                 familyId: 'f3970d31-62f6-4fdd-b35b-a79654261b54'
             },
             body: JSON.stringify({
-                memberId: 'member1',
+                contentType: 'image/png',
             })
         }
     });

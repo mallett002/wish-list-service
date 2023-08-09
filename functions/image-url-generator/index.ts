@@ -10,7 +10,7 @@ from your Lambda. (image/png)
 */
 
 
-// GET /families/{familyId}/image-upload-url
+// GET /families/{familyId}/image
 // uploads the family image to s3 by its familyId
 export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const s3Client = new S3Client({ region: 'us-east-1' });

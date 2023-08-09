@@ -17,7 +17,7 @@ interface WishListRestApiProps {
     deleteInvitationLambda: lambda.Function,
     updateGiftLambda: lambda.Function,
     deleteGiftLambda: lambda.Function,
-    imageUploadLambda: lambda.Function,
+    imageUrlGeneratortLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -185,37 +185,47 @@ export class WishListRestApi extends Construct {
         authLambda.grantInvoke(props.deleteGiftLambda);
 
         // Upload image: POST /families/{familyId}/image
-        const imageUploadIntegration = new apigateway.LambdaIntegration(props.imageUploadLambda, {
-            proxy: true,
-            passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
-            contentHandling: apigateway.ContentHandling.CONVERT_TO_BINARY,
-            integrationResponses: [{
-                statusCode: '201',
-                responseParameters: {
-                  'method.response.header.Content-Type': "'application/octet-stream'",
-                },
-              }],
-        });
+        // const imageUploadIntegration = new apigateway.LambdaIntegration(props.imageUploadLambda, {
+        //     proxy: true,
+        //     passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
+        //     contentHandling: apigateway.ContentHandling.CONVERT_TO_BINARY,
+        //     integrationResponses: [{
+        //         statusCode: '201',
+        //         responseParameters: {
+        //           'method.response.header.Content-Type': "'image/png'",
+        //         },
+        //       }],
+        // });
 
-        // Body mapping template here: https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
-        familyImage.addMethod('POST', imageUploadIntegration, {
+        // // Body mapping template here: https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
+        // familyImage.addMethod('POST', imageUploadIntegration, {
+        //     authorizer: authorizer,
+        //     authorizationType: apigateway.AuthorizationType.CUSTOM,
+        //     // requestParameters: {
+        //     //     'method.request.header.Content-Type': true,
+        //     //     'method.request.header.Accept': true,
+        //     // },
+        //     methodResponses: [{
+        //         statusCode: '201',
+        //         responseParameters: {
+        //           'method.response.header.Content-Type': true,
+        //         },
+        //     }]
+        // });
+        // familyImage.addCorsPreflight({
+        //     allowOrigins: ['localhost']
+        // });
+        // authLambda.grantInvoke(props.imageUploadLambda);
+
+        const imageUrlGeneratorIntegration = new apigateway.LambdaIntegration(props.imageUrlGeneratortLambda, { proxy: true });
+        familyImage.addMethod('POST', imageUrlGeneratorIntegration, {
             authorizer: authorizer,
             authorizationType: apigateway.AuthorizationType.CUSTOM,
-            // requestParameters: {
-            //     'method.request.header.Content-Type': true,
-            //     'method.request.header.Accept': true,
-            // },
-            methodResponses: [{
-                statusCode: '201',
-                responseParameters: {
-                  'method.response.header.Content-Type': true,
-                },
-            }]
         });
         familyImage.addCorsPreflight({
-            allowOrigins: ['localhost']
+            allowOrigins: ['*']
         });
-        authLambda.grantInvoke(props.imageUploadLambda);
+        authLambda.grantInvoke(props.imageUrlGeneratortLambda);
 
     }
 }
