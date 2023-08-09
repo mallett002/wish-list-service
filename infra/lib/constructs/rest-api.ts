@@ -36,7 +36,7 @@ export class WishListRestApi extends Construct {
         const api = new apigateway.RestApi(this, 'wish-list-api', {
             endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] },
             // binaryMediaTypes: ['multipart/form-data']
-            binaryMediaTypes: ['*/*']
+            // binaryMediaTypes: ['*/*']
         });
 
         const authLambda = new lambda.DockerImageFunction(this, 'authorizer-lambda', {
@@ -217,6 +217,7 @@ export class WishListRestApi extends Construct {
         // });
         // authLambda.grantInvoke(props.imageUploadLambda);
 
+        // Generate image upload url: POST /families/{familyId}/image
         const imageUrlGeneratorIntegration = new apigateway.LambdaIntegration(props.imageUrlGeneratortLambda, { proxy: true });
         familyImage.addMethod('POST', imageUrlGeneratorIntegration, {
             authorizer: authorizer,
