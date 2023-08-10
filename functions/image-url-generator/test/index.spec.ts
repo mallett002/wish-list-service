@@ -12,6 +12,8 @@ describe('image-url-generator', () => {
             },
             body: JSON.stringify({
                 contentType: 'image/png',
+                operation: 'GET_OBJECT'
+                // operation: 'PUT_OBJECT'
             })
         }
     });
