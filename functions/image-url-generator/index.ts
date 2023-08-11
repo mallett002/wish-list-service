@@ -1,4 +1,10 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, } from '@aws-sdk/client-s3';
+import {
+    S3Client,
+    PutObjectCommand,
+    GetObjectCommand,
+    PutObjectCommandInput,
+    GetObjectCommandInput
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { parse } from 'aws-multipart-parser';
@@ -21,7 +27,14 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
     const fileType = contentType === 'image/png' ? '.png' : '.jpeg';
     const validOperation = [PUT_OBJECT, GET_OBJECT].includes(operation);
 
-    if (!operation || !validOperation || operation === PUT_OBJECT && !contentType) {
+    if (
+        !operation ||
+        !validOperation ||
+        operation === PUT_OBJECT && !contentType ||
+        !['image/png', 'image/jpeg'].includes(contentType)
+    ) {
+        console.log({ contentType, operation });
+
         return {
             statusCode: 400,
             headers: {
@@ -29,22 +42,27 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Credentials": true
             },
-            body: JSON.stringify({ message: 'Bad Request: Missing contentType' })
+            body: JSON.stringify({ message: 'Bad Request: Invalid contentType or operation' })
         };
     }
 
     try {
 
         if (operation === PUT_OBJECT) {
-            const input = {
+            // This is uploading as png correctly now.
+            const input: PutObjectCommandInput = {
                 Bucket: 'wish-list-family-image',
                 Key: `${familyId}${fileType}`,
                 ContentType: contentType,
+                // ContentDisposition: contentType
+                // Metadata: {
+                //     'Content-Type': contentType
+                // }
             };
-    
+
             const command = new PutObjectCommand(input);
             const imageUploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-    
+
             return {
                 statusCode: 200,
                 headers: {
@@ -56,15 +74,17 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             };
         }
         // else it's a GET_OBJECT:
-        
-        const input = {
+
+        const input: GetObjectCommandInput = {
             Bucket: 'wish-list-family-image',
             Key: `${familyId}${fileType}`,
-            // ContentType: contentType,
+            // ResponseContentType: contentType,
         };
 
         const command = new GetObjectCommand(input);
         const fetchImageUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+        console.log({ fetchImageUrl });
 
         return {
             statusCode: 200,
@@ -75,7 +95,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             },
             body: JSON.stringify({ fetchImageUrl })
         };
-        
+
     } catch (error) {
         console.log(JSON.stringify({ error }));
 
