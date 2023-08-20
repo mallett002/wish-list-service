@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.383.0",
+    "@aws-sdk/s3-presigned-post": "^3.391.0",
     "@aws-sdk/s3-request-presigner": "^3.386.0",
     "@types/aws-lambda": "^8.10.115",
     "aws-multipart-parser": "^0.2.1",

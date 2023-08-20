@@ -8,6 +8,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { APIGatewayProxyResult } from 'aws-lambda';
 import { parse } from 'aws-multipart-parser';
+import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 
 /*
 Clients have to provide an Accept header as part of their request.
@@ -53,15 +54,30 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             const input: PutObjectCommandInput = {
                 Bucket: 'wish-list-family-image',
                 Key: `${familyId}${fileType}`,
-                ContentType: contentType,
-                // ContentDisposition: contentType
-                // Metadata: {
-                //     'Content-Type': contentType
-                // }
+                ContentType: contentType
             };
 
             const command = new PutObjectCommand(input);
             const imageUploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+
+            // const presignedPostData = await createPresignedPost(s3Client, {
+            //     Bucket: 'wish-list-family-image',
+            //     Key: `${familyId}${fileType}`,
+            //     Conditions: [
+            //         { bucket: "wish-list-family-image" },
+            //         // ["starts-with", "$key", `user/${id}`],
+            //         ["content-length-range", 0, 1000000],
+            //         { 'Content-Type': contentType }
+            //     ],
+            //     Fields: {
+            //         Key: `${familyId}${fileType}`,
+            //         'Content-Type': contentType
+            //         // 'Content-Type': 'multipart/form-data'
+            //     },
+            //     Expires: 600
+            // });
+
+            // console.log({ presignedPostData });
 
             return {
                 statusCode: 200,
@@ -70,7 +86,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
                     "Access-Control-Allow-Origin": "*",
                     "Access-Control-Allow-Credentials": true
                 },
-                body: JSON.stringify({ imageUploadUrl })
+                body: JSON.stringify({imageUploadUrl})
             };
         }
         // else it's a GET_OBJECT:
