@@ -17,6 +17,7 @@ interface WishListRestApiProps {
     deleteInvitationLambda: lambda.Function,
     updateGiftLambda: lambda.Function,
     deleteGiftLambda: lambda.Function,
+    imageUrlGeneratortLambda: lambda.Function,
     appClientId: string,
     userPoolId: string,
 }
@@ -63,6 +64,7 @@ export class WishListRestApi extends Construct {
         const gifts = familyMember.addResource('gifts'); // /families/{id}/members/{email}/gifts
         const gift = gifts.addResource('{giftId}'); // /families/{id}/members/{email}/gifts/{giftId}
         const invitation = invitations.addResource('{email}'); // /families/{familyId}/invitations/{email}
+        const familyImage = family.addResource('image'); // /families/{familyId}/image
 
         // Create family: POST /families
         const createFamilyIntegration = new apigateway.LambdaIntegration(props.createFamilyLambda, { proxy: true, });
@@ -130,13 +132,13 @@ export class WishListRestApi extends Construct {
         authLambda.grantInvoke(props.createInvitationLambda);
 
         // Search member: GET /members?email=<email>
-        const searchMemberIntegration = new apigateway.LambdaIntegration(props.searchMemberLambda, { 
+        const searchMemberIntegration = new apigateway.LambdaIntegration(props.searchMemberLambda, {
             proxy: true,
             requestParameters: {
                 "integration.request.querystring.email":
-                "method.request.querystring.email", 
+                    "method.request.querystring.email",
             }
-         });
+        });
         rootMembers.addMethod('GET', searchMemberIntegration, {
             authorizer: authorizer,
             authorizationType: apigateway.AuthorizationType.CUSTOM,
@@ -179,5 +181,17 @@ export class WishListRestApi extends Construct {
             authorizationType: apigateway.AuthorizationType.CUSTOM,
         });
         authLambda.grantInvoke(props.deleteGiftLambda);
+
+        // Generate image upload/fetch url for family images: POST /families/{familyId}/image
+        const imageUrlGeneratorIntegration = new apigateway.LambdaIntegration(props.imageUrlGeneratortLambda, { proxy: true });
+        familyImage.addMethod('POST', imageUrlGeneratorIntegration, {
+            authorizer: authorizer,
+            authorizationType: apigateway.AuthorizationType.CUSTOM,
+        });
+        familyImage.addCorsPreflight({
+            allowOrigins: ['*']
+        });
+        authLambda.grantInvoke(props.imageUrlGeneratortLambda);
+
     }
 }
