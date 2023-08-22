@@ -34,9 +34,7 @@ export class WishListRestApi extends Construct {
         super(scope, id);
 
         const api = new apigateway.RestApi(this, 'wish-list-api', {
-            endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] },
-            // binaryMediaTypes: ['multipart/form-data']
-            // binaryMediaTypes: ['*/*']
+            endpointConfiguration: { types: [apigateway.EndpointType.REGIONAL] }
         });
 
         const authLambda = new lambda.DockerImageFunction(this, 'authorizer-lambda', {
@@ -184,40 +182,7 @@ export class WishListRestApi extends Construct {
         });
         authLambda.grantInvoke(props.deleteGiftLambda);
 
-        // Upload image: POST /families/{familyId}/image
-        // const imageUploadIntegration = new apigateway.LambdaIntegration(props.imageUploadLambda, {
-        //     proxy: true,
-        //     passthroughBehavior: apigateway.PassthroughBehavior.WHEN_NO_MATCH,
-        //     contentHandling: apigateway.ContentHandling.CONVERT_TO_BINARY,
-        //     integrationResponses: [{
-        //         statusCode: '201',
-        //         responseParameters: {
-        //           'method.response.header.Content-Type': "'image/png'",
-        //         },
-        //       }],
-        // });
-
-        // // Body mapping template here: https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-payload-encodings-configure-with-console.html
-        // familyImage.addMethod('POST', imageUploadIntegration, {
-        //     authorizer: authorizer,
-        //     authorizationType: apigateway.AuthorizationType.CUSTOM,
-        //     // requestParameters: {
-        //     //     'method.request.header.Content-Type': true,
-        //     //     'method.request.header.Accept': true,
-        //     // },
-        //     methodResponses: [{
-        //         statusCode: '201',
-        //         responseParameters: {
-        //           'method.response.header.Content-Type': true,
-        //         },
-        //     }]
-        // });
-        // familyImage.addCorsPreflight({
-        //     allowOrigins: ['localhost']
-        // });
-        // authLambda.grantInvoke(props.imageUploadLambda);
-
-        // Generate image upload url: POST /families/{familyId}/image
+        // Generate image upload/fetch url for family images: POST /families/{familyId}/image
         const imageUrlGeneratorIntegration = new apigateway.LambdaIntegration(props.imageUrlGeneratortLambda, { proxy: true });
         familyImage.addMethod('POST', imageUrlGeneratorIntegration, {
             authorizer: authorizer,
