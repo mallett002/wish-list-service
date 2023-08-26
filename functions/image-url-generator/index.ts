@@ -62,7 +62,6 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             const command = new PutObjectCommand(input);
             const imageUploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
 
-            // Update familyImage item to be the contentType of this image. (Need this for fetching the image)
             const getFamilyInput: GetItemCommandInput = {
                 "Key": {
                     "PK": {
@@ -79,10 +78,10 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
             const { Item: familyItem } = await dynamoClient.send(getFamilyCommand);
 
             if (familyItem) {
-                if (familyItem.familyImage.S !== contentType) {
+                if (familyItem.imageContentType.S !== contentType) {
                     const updateImageInput = {
                         "ExpressionAttributeNames": {
-                            "#FI": "familyImage", // Todo: change this attribute to name "imageContentType"
+                            "#CT": "imageContentType",
                         },
                         "ExpressionAttributeValues": {
                             ":value": {
@@ -97,14 +96,13 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
                                 S: 'MEMBER#BOARD'
                             }
                         },
-                        "ReturnValues": "ALL_NEW", // DON'T CARE ABOUT THIS, remove it
+                        "ReturnValues": "ALL_NEW",
                         "TableName": "wish-list-table",
-                        "UpdateExpression": "SET #FI = :value"
+                        "UpdateExpression": "SET #CT = :value"
                     };
                     const updateImageCommand = new UpdateItemCommand(updateImageInput);
                     const updateImageResponse = await dynamoClient.send(updateImageCommand);
                     console.log({ updateImageResponse });
-
                 }
             } else {
                 return {

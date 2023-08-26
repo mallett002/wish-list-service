@@ -50,7 +50,7 @@ export const handler = async (event: any): Promise<APIGatewayProxyResult> => {
   const [familyProfile] = response.Items.filter(({ SK }) => SK.S === 'MEMBER#BOARD').map((item) => ({
     familyId: item?.PK?.S.replace('FAMILY#', '') || '',
     familyName: item.familyName.S,
-    familyImage: item.familyImage.S,
+    imageContentType: item.imageContentType.S,
   }));
 
   const invitations = response.Items.filter(({ SK }) => SK.S.includes('#INVITATION'));

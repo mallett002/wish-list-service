@@ -58,7 +58,7 @@ export const buildQueryResult = () => {
           },
           Items: [
             {
-                "familyImage": {
+                "imageContentType": {
                     "S": chance.string()
                   },
                   "SK": {
