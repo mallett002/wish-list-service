@@ -58,8 +58,8 @@ export const buildQueryResult = () => {
           },
           Items: [
             {
-                "familyImage": {
-                    "S": chance.string()
+                "imageContentType": {
+                    "S": chance.pickone(['image/png', 'image/jpeg'])
                   },
                   "SK": {
                     "S": "MEMBER#BOARD"

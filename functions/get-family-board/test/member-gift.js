@@ -58,8 +58,8 @@ function createFamilyInput(familyId) {
                 "familyName": {
                     "S": chance.last()
                 },
-                "familyImage": {
-                    "S": chance.string()
+                "imageContentType": {
+                    "S": chance.pickone(['image/png', 'image/jpeg'])
                 },
             },
         }

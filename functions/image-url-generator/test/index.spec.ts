@@ -8,12 +8,12 @@ describe('image-url-generator', () => {
         // this stuff will change:
         expectedEvent = {
             pathParameters: {
-                familyId: 'f3970d31-62f6-4fdd-b35b-a79654261b54'
+                familyId: '94548e87-e9b3-4917-8594-bfb1a99a4f94'
             },
             body: JSON.stringify({
                 contentType: 'image/png',
-                operation: 'GET_OBJECT'
-                // operation: 'PUT_OBJECT'
+                // operation: 'GET_OBJECT'
+                operation: 'PUT_OBJECT'
             })
         }
     });

@@ -8,7 +8,7 @@ import { APIGatewayProxyResult, APIGatewayProxyEvent } from 'aws-lambda';
 export const handler = async (event: APIGatewayProxyEvent, context?: any): Promise<APIGatewayProxyResult> => {
 
     const client = new DynamoDBClient({ region: "us-east-1" });
-    const { familyName, familyImage, email: creatorEmail } = JSON.parse(event.body || '{}');
+    const { familyName, email: creatorEmail } = JSON.parse(event.body || '{}');
 
     // TODO: Add try catches to all the db calls in all the handlers
     const getMemberInput: GetItemCommandInput = {
@@ -47,8 +47,8 @@ export const handler = async (event: APIGatewayProxyEvent, context?: any): Promi
                                 "familyName": {
                                     "S": familyName
                                 },
-                                "familyImage": {
-                                    "S": familyImage
+                                "imageContentType": {
+                                    "S": null
                                 },
                             },
                         }
